@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side Scroller Sprint</title>
+    <meta name="application-name" content="Side Scroller Sprint">
+    <meta name="apple-mobile-web-app-title" content="Side Scroller Sprint">
+    <style>
+        body {
+            margin: 0; padding: 0; background-color: black; color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; overflow: hidden; user-select: none;
+        }
+
+        /* --- START SCREEN STYLES --- */
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black; z-index: 100;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        h1.title {
+            color: #ffffff; 
+            /* RED WHITE AND BLUE GLOW */
+            text-shadow: 
+                0 0 5px #ffffff,   /* White Inner */
+                0 0 15px #0055ff,  /* Blue Middle */
+                0 0 30px #ff0000,  /* Red Outer */
+                0 0 40px #ff0000;  /* Extra Red Haze */
+            font-size: 40px; margin-bottom: 10px; letter-spacing: 5px;
+            text-align: center;
+        }
+
+        #player-name-input {
+            background-color: #111; color: #00FF00; border: 2px solid #333;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 24px; text-align: center; padding: 10px;
+            margin: 20px 0; outline: none; text-transform: uppercase;
+            width: 250px; border-radius: 5px;
+        }
+        #player-name-input::placeholder { color: #444; }
+        #player-name-input:focus { border-color: #00FF00; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
+
+        #start-btn {
+            background-color: #00FF00; color: black; border: none;
+            padding: 15px 40px; font-size: 20px; font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer; border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,255,0,0.5);
+            transition: all 0.2s;
+        }
+        #start-btn:hover { background-color: white; box-shadow: 0 0 25px white; transform: scale(1.05); }
+
+        /* --- GAME UI --- */
+        #game-container { display: none; /* Hidden initially */ width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
+        
+        canvas { border-bottom: 2px solid white; background-color: black; display: block; }
+        #instructions { margin-top: 20px; color: #888; font-size: 14px; text-align: center; }
+        #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer; }
+        
+        /* LEADERBOARD STYLES */
+        #leaderboard-container {
+            position: absolute; top: 20px; right: 20px; width: 220px;
+            background-color: rgba(0, 0, 0, 0.9); border: 1px solid #333;
+            padding: 10px; z-index: 30; font-size: 12px;
+        }
+        #leaderboard-container h3 {
+            margin: 0 0 10px 0; text-align: center; border-bottom: 1px solid #555;
+            padding-bottom: 5px; font-size: 14px; color: #00FFFF;
+        }
+        #lb-list { list-style: none; padding: 0; margin: 0; }
+        #lb-list li { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        #lb-list li span.lb-score { color: #FF00FF; }
+        .loading-text { text-align: center; color: #555; }
+
+        /* --- FOOTER MESSAGE STYLES --- */
+        @keyframes pulseYellow {
+            0% { opacity: 1; text-shadow: 0 0 10px #FFFF00; }
+            50% { opacity: 0.6; text-shadow: 0 0 2px #888800; }
+            100% { opacity: 1; text-shadow: 0 0 10px #FFFF00; }
+        }
+
+        #footer-msg {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #FFFF00; /* Neon Yellow */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.85); 
+            text-shadow: 0 0 8px #FFFF00; 
+            z-index: 200; 
+            box-sizing: border-box;
+            border-top: 1px solid #333;
+            line-height: 1.4;
+            animation: pulseYellow 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1 class="title">SIDE SCROLLER SPRINT</h1>
+        <input type="text" id="player-name-input" placeholder="ENTER NAME" maxlength="12" autocomplete="off">
+        <button id="start-btn">INITIALIZE</button>
+        <div style="margin-top: 20px; color: #555; font-size: 12px;">TOP SCORE: <span id="menu-high-score">0</span></div>
+    </div>
+
+    <div id="leaderboard-container">
+        <h3>GLOBAL TOP 5</h3>
+        <ul id="lb-list">
+            <li class="loading-text">Loading...</li>
+        </ul>
+    </div>
+
+    <div id="game-container" style="display:none;">
+        <canvas id="gameCanvas"></canvas>
+        <div id="instructions">Press SPACE, UP ARROW, or TAP SCREEN to jump</div>
+        <div id="touch-layer"></div>
+    </div>
+
+    <div id="footer-msg">
+        SYSTEM NOTICE: Site maintenance this weekend. Expect periodic downtime.<br>
+        Yes, I'm adding ads (nothing obnoxious, just trying to make a little money from this if it works out).
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { getDatabase, ref, set, get, child, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+
+        // --- YOUR FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCiRUZZsaBiGKyYGlGc4coI14MG23bzT3g",
+            authDomain: "game-dd2e6.firebaseapp.com",
+            databaseURL: "https://game-dd2e6-default-rtdb.firebaseio.com",
+            projectId: "game-dd2e6",
+            storageBucket: "game-dd2e6.firebasestorage.app",
+            messagingSenderId: "989207031024",
+            appId: "1:989207031024:web:72e77a4cf766e564f66635"
+        };
+        // ---------------------------
+
+        // Initialize Firebase
+        let db;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getDatabase(app);
+            listenForLeaderboardUpdates();
+        } catch (e) {
+            console.error("Firebase Init Error:", e);
+            document.getElementById('lb-list').innerHTML = '<li class="loading-text" style="color:red">Config Error</li>';
+        }
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const gameContainer = document.getElementById('game-container');
+        const startBtn = document.getElementById('start-btn');
+        const nameInput = document.getElementById('player-name-input');
+        const menuHighScoreSpan = document.getElementById('menu-high-score');
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const touchLayer = document.getElementById('touch-layer');
+        const lbList = document.getElementById('lb-list');
+
+        // --- LOAD PLAYER IMAGE ---
+        const playerImage = new Image();
+        playerImage.src = 'trump.png'; 
+        
+        let imageLoaded = false;
+        playerImage.onload = function() { imageLoaded = true; };
+        playerImage.onerror = function() { imageLoaded = false; };
+
+        // Game Variables
+        let frames = 0;
+        let score = 0;
+        let highScore = 0;
+        let gameSpeed = 5;
+        let isGameOver = false;
+        let isGameRunning = false;
+        let obstacles = [];
+        let currentPlayerName = "ANON";
+
+        // --- MENU LOGIC ---
+
+        // Load saved name and score on startup
+        const savedName = localStorage.getItem('neonJumperName');
+        const savedScore = localStorage.getItem('jumperHighScore');
+        if (savedName) nameInput.value = savedName;
+        if (savedScore) {
+            highScore = parseInt(savedScore);
+            menuHighScoreSpan.innerText = highScore;
+        }
+
+        function startGame() {
+            const nameVal = nameInput.value.trim();
+            currentPlayerName = nameVal || "ANON";
+            
+            // Save name
+            localStorage.setItem('neonJumperName', currentPlayerName);
+            
+            // Fetch cloud score to ensure we are up to date
+            fetchMyPersonalBest();
+
+            // UI Transition
+            startScreen.style.display = 'none';
+            gameContainer.style.display = 'flex'; // Show game
+            
+            // Start Loop
+            isGameRunning = true;
+            resetGame();
+        }
+
+        startBtn.addEventListener('click', startGame);
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startGame();
+        });
+
+        // --- SCORE LOGIC ---
+
+        function submitScoreToGlobal(name, currentScore) {
+            if (!db) return;
+            const safeKey = name.replace(/[.#$[\]]/g, "");
+            const dbRef = ref(db);
+
+            get(child(dbRef, `scores/${safeKey}`)).then((snapshot) => {
+                let serverScore = 0;
+                if (snapshot.exists()) serverScore = parseInt(snapshot.val().score) || 0;
+
+                if (currentScore > serverScore) {
+                    set(ref(db, 'scores/' + safeKey), {
+                        name: name, score: currentScore, timestamp: Date.now()
+                    });
+                }
+            });
+        }
+
+        function fetchMyPersonalBest() {
+            if (!db) return;
+            if(currentPlayerName === "ANON") return;
+            
+            const safeKey = currentPlayerName.replace(/[.#$[\]]/g, "");
+            get(child(ref(db), `scores/${safeKey}`)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const serverData = snapshot.val();
+                    if (serverData.score > highScore) {
+                        highScore = parseInt(serverData.score);
+                        localStorage.setItem('jumperHighScore', highScore);
+                    }
+                }
+            });
+        }
+
+        function listenForLeaderboardUpdates() {
+            if (!db) return;
+            const scoresRef = query(ref(db, 'scores'), orderByChild('score'), limitToLast(5));
+            
+            onValue(scoresRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) { lbList.innerHTML = '<li class="loading-text">No Scores Yet</li>'; return; }
+                const sortedScores = Object.values(data).sort((a, b) => b.score - a.score);
+                updateLeaderboardUI(sortedScores);
+            }, (error) => {
+                lbList.innerHTML = `<li class="loading-text" style="color:red; font-size:10px">Permission Error</li>`;
+            });
+        }
+
+        function updateLeaderboardUI(entries) {
+            lbList.innerHTML = "";
+            entries.forEach(entry => {
+                const li = document.createElement('li');
+                li.innerHTML = `${entry.name} <span class="lb-score">${entry.score}</span>`;
+                lbList.appendChild(li);
+            });
+        }
+
+        // --- GAME LOGIC ---
+
+        function resizeCanvas() {
+            canvas.width = Math.min(window.innerWidth - 20, 800);
+            canvas.height = 300;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const obstacleColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#FFA500', '#9400D3', '#FF1493'];
+
+        const player = {
+            x: 50, y: 150, radius: 25, 
+            dy: 0, jumpForce: 12, gravity: 0.6, grounded: false,
+            draw: function() {
+                if (imageLoaded) {
+                    const aspect = playerImage.width / playerImage.height;
+                    let drawW = this.radius * 2;
+                    let drawH = this.radius * 2;
+                    if (aspect > 1) drawH = drawW / aspect; else drawW = drawH * aspect;
+                    const drawX = this.x - (drawW / 2);
+                    const drawY = this.y - (drawH / 2);
+                    ctx.drawImage(playerImage, drawX, drawY, drawW, drawH);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'white'; ctx.fill(); ctx.closePath();
+                }
+            },
+            jump: function() {
+                if (this.grounded) { this.dy = -this.jumpForce; this.grounded = false; }
+            },
+            update: function() {
+                this.y += this.dy;
+                if (this.y + this.radius < canvas.height) {
+                    this.dy += this.gravity; this.grounded = false;
+                } else {
+                    this.dy = 0; this.grounded = true; this.y = canvas.height - this.radius;
+                }
+                this.draw();
+            }
+        };
+
+        class Obstacle {
+            constructor() {
+                this.w = 20 + Math.random() * 30; this.h = 30 + Math.random() * 50;
+                this.x = canvas.width; this.y = canvas.height - this.h;
+                this.color = obstacleColors[Math.floor(Math.random() * obstacleColors.length)];
+                this.markedForDeletion = false;
+            }
+            draw() { ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.w, this.h); }
+            update() {
+                this.x -= gameSpeed;
+                if (this.x + this.w < 0) { this.markedForDeletion = true; score++; }
+                this.draw();
+            }
+        }
+
+        function handleInput(e) {
+            if (document.activeElement === nameInput) return;
+            if (e.type === 'keydown' && (e.code === 'Space' || e.code === 'ArrowUp')) e.preventDefault();
+            if (isGameOver) resetGame(); else player.jump();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if(isGameRunning) {
+                if (e.code === 'Space' || e.code === 'ArrowUp') handleInput(e);
+            }
+        });
+        touchLayer.addEventListener('touchstart', (e) => {
+            e.preventDefault(); 
+            if(isGameRunning) handleInput(e);
+        });
+        touchLayer.addEventListener('mousedown', (e) => {
+            if(isGameRunning) handleInput(e);
+        });
+
+        function spawnObstacles() {
+            let spawnRate = Math.max(60, 150 - gameSpeed * 5);
+            if (frames % Math.floor(spawnRate) === 0) obstacles.push(new Obstacle());
+        }
+
+        function checkCollision(player, obstacle) {
+            const distX = Math.abs(player.x - obstacle.x - obstacle.w / 2);
+            const distY = Math.abs(player.y - obstacle.y - obstacle.h / 2);
+            if (distX > (obstacle.w / 2 + player.radius)) return false;
+            if (distY > (obstacle.h / 2 + player.radius)) return false;
+            if (distX <= (obstacle.w / 2)) return true;
+            if (distY <= (obstacle.h / 2)) return true;
+            const dx = distX - obstacle.w / 2;
+            const dy = distY - obstacle.h / 2;
+            return (dx * dx + dy * dy <= (player.radius * player.radius));
+        }
+
+        function drawText() {
+            ctx.fillStyle = 'white'; ctx.font = '20px Courier New'; ctx.textAlign = 'left';
+            ctx.fillText(`${currentPlayerName}`, 20, 30);
+            ctx.fillText(`Score: ${score}`, 20, 60);
+            ctx.fillText(`High: ${highScore}`, 20, 85);
+
+            if (isGameOver) {
+                // Dark overlay
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // --- CHANGED: RED AND BOLD ---
+                ctx.fillStyle = '#FF0000'; 
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 40px Courier New'; 
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+                
+                // Reset for subtitle
+                ctx.fillStyle = 'white'; 
+                ctx.font = '20px Courier New'; 
+                ctx.fillText('Tap to Restart', canvas.width / 2, canvas.height / 2 + 20);
+            }
+        }
+
+        function resetGame() {
+            isGameOver = false; score = 0; gameSpeed = 5; obstacles = []; frames = 0;
+            player.y = 150; player.dy = 0; 
+            animate();
+        }
+
+        function animate() {
+            if (!isGameRunning || isGameOver) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            player.update(); spawnObstacles();
+
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].update();
+                if (checkCollision(player, obstacles[i])) {
+                    isGameOver = true;
+                    if (score > highScore) {
+                        highScore = score;
+                        try { localStorage.setItem('jumperHighScore', highScore); } catch(e){}
+                    }
+                    submitScoreToGlobal(currentPlayerName, score);
+                    drawText(); return;
+                }
+            }
+            obstacles = obstacles.filter(obs => !obs.markedForDeletion);
+            drawText(); frames++;
+            if (frames % 500 === 0) gameSpeed += 0.5;
+            requestAnimationFrame(animate);
+        }
+        
+        // Initial Draw
+        resizeCanvas();
+
+    </script>
+</body>
+</html>
