@@ -8,10 +8,8 @@
     <meta name="apple-mobile-web-app-title" content="Side Scroller Sprint">
     
     <link rel="icon" type="image/png" href="favicon.png">
-
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <meta property="og:image" content="icon-512.png">
@@ -23,13 +21,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7055039904830703"
-     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7055039904830703" crossorigin="anonymous"></script>
 
     <style>
         body {
             margin: 0; padding: 0; background-color: black; color: white;
-            /* CHANGED FONT TO OUTFIT */
             font-family: 'Outfit', sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
             min-height: 100vh; 
@@ -47,21 +43,19 @@
 
         h1.title {
             color: #ffffff; 
-            /* RED WHITE AND BLUE GLOW */
             text-shadow: 
-                0 0 5px #ffffff,   /* White Inner */
-                0 0 15px #0055ff,  /* Blue Middle */
-                0 0 30px #ff0000,  /* Red Outer */
-                0 0 40px #ff0000;  /* Extra Red Haze */
-            font-size: 40px; margin-bottom: 10px; letter-spacing: 2px; /* Reduced spacing for sans-serif */
+                0 0 5px #ffffff,
+                0 0 15px #0055ff,
+                0 0 30px #ff0000,
+                0 0 40px #ff0000;
+            font-size: 40px; margin-bottom: 10px; letter-spacing: 2px;
             text-align: center;
-            font-weight: 900; /* Extra Bold for Outfit */
+            font-weight: 900;
             text-transform: uppercase;
         }
 
         #player-name-input {
             background-color: #111; color: #00FF00; border: 2px solid #333;
-            /* CHANGED FONT TO OUTFIT */
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
             font-size: 24px; text-align: center; padding: 10px;
@@ -73,8 +67,7 @@
 
         #start-btn {
             background-color: #00FF00; color: black; border: none;
-            padding: 15px 40px; font-size: 20px; font-weight: 900; /* Extra Bold */
-            /* CHANGED FONT TO OUTFIT */
+            padding: 15px 40px; font-size: 20px; font-weight: 900;
             font-family: 'Outfit', sans-serif;
             cursor: pointer; border-radius: 5px;
             box-shadow: 0 0 15px rgba(0,255,0,0.5);
@@ -84,12 +77,12 @@
 
         /* --- GAME UI --- */
         #game-container { 
-            display: none; /* Hidden initially */ 
+            display: none; 
             width: 100%; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center;
-            margin-top: 50px; /* Default space */
+            margin-top: 50px; 
         }
         
         canvas { border-bottom: 2px solid white; background-color: black; display: block; }
@@ -122,8 +115,7 @@
         #footer-msg {
             width: 100%;
             text-align: center;
-            color: #FFFF00; /* Neon Yellow */
-            /* CHANGED FONT TO OUTFIT */
+            color: #FFFF00; 
             font-family: 'Outfit', sans-serif;
             font-size: 12px;
             font-weight: 700;
@@ -140,9 +132,7 @@
 
         /* --- MOBILE LAYOUT FIXES --- */
         @media (max-width: 600px) {
-            #game-container {
-                margin-top: 180px !important; 
-            }
+            #game-container { margin-top: 180px !important; }
             #leaderboard-container {
                 width: 90%;
                 left: 50%;
@@ -259,8 +249,6 @@
         let currentPlayerName = "ANON";
 
         // --- MENU LOGIC ---
-
-        // Load saved name and score on startup
         const savedName = localStorage.getItem('neonJumperName');
         const savedScore = localStorage.getItem('jumperHighScore');
         if (savedName) nameInput.value = savedName;
@@ -272,18 +260,12 @@
         function startGame() {
             const nameVal = nameInput.value.trim();
             currentPlayerName = nameVal || "ANON";
-            
-            // Save name
             localStorage.setItem('neonJumperName', currentPlayerName);
-            
-            // Fetch cloud score to ensure we are up to date
             fetchMyPersonalBest();
 
-            // UI Transition
             startScreen.style.display = 'none';
-            gameContainer.style.display = 'flex'; // Show game
+            gameContainer.style.display = 'flex'; 
             
-            // Start Loop
             isGameRunning = true;
             resetGame();
         }
@@ -294,7 +276,6 @@
         });
 
         // --- SCORE LOGIC ---
-
         function submitScoreToGlobal(name, currentScore) {
             if (!db) return;
             const safeKey = name.replace(/[.#$[\]]/g, "");
@@ -352,7 +333,6 @@
         }
 
         // --- GAME LOGIC ---
-
         function resizeCanvas() {
             canvas.width = Math.min(window.innerWidth - 20, 800);
             canvas.height = 300;
@@ -446,27 +426,26 @@
         }
 
         function drawText() {
-            // CHANGED FONT TO OUTFIT (Bold)
-            ctx.fillStyle = 'white'; ctx.font = '700 20px Outfit'; ctx.textAlign = 'left';
+            ctx.fillStyle = 'white'; 
+            ctx.textAlign = 'left';
+            // Safe Font String: Weight Size Family, Fallback
+            ctx.font = 'bold 20px "Outfit", sans-serif';
+            
             ctx.fillText(`${currentPlayerName}`, 20, 30);
             ctx.fillText(`Score: ${score}`, 20, 60);
             ctx.fillText(`High: ${highScore}`, 20, 85);
 
             if (isGameOver) {
-                // Dark overlay
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; 
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // --- CHANGED: RED AND BOLD ---
                 ctx.fillStyle = '#FF0000'; 
                 ctx.textAlign = 'center';
-                // CHANGED FONT TO OUTFIT (Extra Bold)
-                ctx.font = '900 40px Outfit'; 
+                ctx.font = '900 40px "Outfit", sans-serif'; 
                 ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
                 
-                // Reset for subtitle
                 ctx.fillStyle = 'white'; 
-                ctx.font = '700 20px Outfit'; 
+                ctx.font = 'bold 20px "Outfit", sans-serif'; 
                 ctx.fillText('Tap to Restart', canvas.width / 2, canvas.height / 2 + 20);
             }
         }
@@ -486,4 +465,23 @@
             for (let i = 0; i < obstacles.length; i++) {
                 obstacles[i].update();
                 if (checkCollision(player, obstacles[i])) {
-                    isGameO
+                    isGameOver = true;
+                    if (score > highScore) {
+                        highScore = score;
+                        try { localStorage.setItem('jumperHighScore', highScore); } catch(e){}
+                    }
+                    submitScoreToGlobal(currentPlayerName, score);
+                    drawText(); return;
+                }
+            }
+            obstacles = obstacles.filter(obs => !obs.markedForDeletion);
+            drawText(); frames++;
+            if (frames % 500 === 0) gameSpeed += 0.5;
+            requestAnimationFrame(animate);
+        }
+        
+        resizeCanvas();
+
+    </script>
+</body>
+</html>
