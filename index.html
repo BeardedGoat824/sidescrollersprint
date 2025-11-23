@@ -79,7 +79,7 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: center;
-            margin-top: 50px; /* Space for top UI */
+            margin-top: 50px; /* Default space */
         }
         
         canvas { border-bottom: 2px solid white; background-color: black; display: block; }
@@ -124,6 +124,23 @@
             animation: pulseYellow 2s infinite ease-in-out;
             margin-top: 20px;
         }
+
+        /* --- MOBILE LAYOUT FIXES --- */
+        @media (max-width: 600px) {
+            /* 1. Push the game canvas DOWN so it clears the scoreboard */
+            #game-container {
+                margin-top: 180px !important; 
+            }
+            
+            /* 2. Ensure Leaderboard fits on screen */
+            #leaderboard-container {
+                width: 90%;
+                left: 50%;
+                transform: translateX(-50%);
+                right: auto;
+                top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -144,7 +161,7 @@
 
     <div id="game-container" style="display:none;">
         <canvas id="gameCanvas"></canvas>
-        <div id="instructions">Press SPACE, UP ARROW, or TAP SCREEN to jump</div>
+        <div id="instructions">Press SPACE or TAP SCREEN to jump</div>
         <div id="touch-layer"></div>
     </div>
 
