@@ -19,16 +19,21 @@
     <meta property="og:description" content="Can you beat the high score?">
     <meta property="og:type" content="website">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7055039904830703"
      crossorigin="anonymous"></script>
 
     <style>
         body {
             margin: 0; padding: 0; background-color: black; color: white;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; /* Changed for scrolling */
+            /* CHANGED FONT TO OUTFIT */
+            font-family: 'Outfit', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
             min-height: 100vh; 
-            overflow-y: auto; /* Changed to allow scrolling for ads */
+            overflow-y: auto;
             user-select: none;
         }
 
@@ -48,13 +53,17 @@
                 0 0 15px #0055ff,  /* Blue Middle */
                 0 0 30px #ff0000,  /* Red Outer */
                 0 0 40px #ff0000;  /* Extra Red Haze */
-            font-size: 40px; margin-bottom: 10px; letter-spacing: 5px;
+            font-size: 40px; margin-bottom: 10px; letter-spacing: 2px; /* Reduced spacing for sans-serif */
             text-align: center;
+            font-weight: 900; /* Extra Bold for Outfit */
+            text-transform: uppercase;
         }
 
         #player-name-input {
             background-color: #111; color: #00FF00; border: 2px solid #333;
-            font-family: 'Courier New', Courier, monospace;
+            /* CHANGED FONT TO OUTFIT */
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
             font-size: 24px; text-align: center; padding: 10px;
             margin: 20px 0; outline: none; text-transform: uppercase;
             width: 250px; border-radius: 5px;
@@ -64,8 +73,9 @@
 
         #start-btn {
             background-color: #00FF00; color: black; border: none;
-            padding: 15px 40px; font-size: 20px; font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
+            padding: 15px 40px; font-size: 20px; font-weight: 900; /* Extra Bold */
+            /* CHANGED FONT TO OUTFIT */
+            font-family: 'Outfit', sans-serif;
             cursor: pointer; border-radius: 5px;
             box-shadow: 0 0 15px rgba(0,255,0,0.5);
             transition: all 0.2s;
@@ -95,10 +105,11 @@
         #leaderboard-container h3 {
             margin: 0 0 10px 0; text-align: center; border-bottom: 1px solid #555;
             padding-bottom: 5px; font-size: 14px; color: #00FFFF;
+            font-weight: 700;
         }
         #lb-list { list-style: none; padding: 0; margin: 0; }
         #lb-list li { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        #lb-list li span.lb-score { color: #FF00FF; }
+        #lb-list li span.lb-score { color: #FF00FF; font-weight: 700; }
         .loading-text { text-align: center; color: #555; }
 
         /* --- FOOTER MESSAGE STYLES --- */
@@ -112,8 +123,10 @@
             width: 100%;
             text-align: center;
             color: #FFFF00; /* Neon Yellow */
-            font-family: 'Courier New', Courier, monospace;
+            /* CHANGED FONT TO OUTFIT */
+            font-family: 'Outfit', sans-serif;
             font-size: 12px;
+            font-weight: 700;
             padding: 20px 10px;
             background-color: #000; 
             text-shadow: 0 0 8px #FFFF00; 
@@ -127,12 +140,9 @@
 
         /* --- MOBILE LAYOUT FIXES --- */
         @media (max-width: 600px) {
-            /* 1. Push the game canvas DOWN so it clears the scoreboard */
             #game-container {
                 margin-top: 180px !important; 
             }
-            
-            /* 2. Ensure Leaderboard fits on screen */
             #leaderboard-container {
                 width: 90%;
                 left: 50%;
@@ -149,7 +159,7 @@
         <h1 class="title">SIDE SCROLLER SPRINT</h1>
         <input type="text" id="player-name-input" placeholder="ENTER NAME" maxlength="12" autocomplete="off">
         <button id="start-btn">INITIALIZE</button>
-        <div style="margin-top: 20px; color: #555; font-size: 12px;">TOP SCORE: <span id="menu-high-score">0</span></div>
+        <div style="margin-top: 20px; color: #555; font-size: 12px; font-weight: 700;">TOP SCORE: <span id="menu-high-score">0</span></div>
     </div>
 
     <div id="leaderboard-container">
@@ -176,7 +186,7 @@
              (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
     </div>
-    <div style="max-width: 800px; margin: 20px auto; padding: 10px; color: #333; font-family: sans-serif; font-size: 12px; line-height: 1.6; text-align: center;">
+    <div style="max-width: 800px; margin: 20px auto; padding: 10px; color: #333; font-family: 'Outfit', sans-serif; font-size: 12px; line-height: 1.6; text-align: center;">
         <h2>About Side Scroller Sprint</h2>
         <p>
             Side Scroller Sprint is a fast-paced HTML5 endless runner game. 
@@ -436,7 +446,8 @@
         }
 
         function drawText() {
-            ctx.fillStyle = 'white'; ctx.font = '20px Courier New'; ctx.textAlign = 'left';
+            // CHANGED FONT TO OUTFIT (Bold)
+            ctx.fillStyle = 'white'; ctx.font = '700 20px Outfit'; ctx.textAlign = 'left';
             ctx.fillText(`${currentPlayerName}`, 20, 30);
             ctx.fillText(`Score: ${score}`, 20, 60);
             ctx.fillText(`High: ${highScore}`, 20, 85);
@@ -449,12 +460,13 @@
                 // --- CHANGED: RED AND BOLD ---
                 ctx.fillStyle = '#FF0000'; 
                 ctx.textAlign = 'center';
-                ctx.font = 'bold 40px Courier New'; 
+                // CHANGED FONT TO OUTFIT (Extra Bold)
+                ctx.font = '900 40px Outfit'; 
                 ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
                 
                 // Reset for subtitle
                 ctx.fillStyle = 'white'; 
-                ctx.font = '20px Courier New'; 
+                ctx.font = '700 20px Outfit'; 
                 ctx.fillText('Tap to Restart', canvas.width / 2, canvas.height / 2 + 20);
             }
         }
@@ -474,24 +486,4 @@
             for (let i = 0; i < obstacles.length; i++) {
                 obstacles[i].update();
                 if (checkCollision(player, obstacles[i])) {
-                    isGameOver = true;
-                    if (score > highScore) {
-                        highScore = score;
-                        try { localStorage.setItem('jumperHighScore', highScore); } catch(e){}
-                    }
-                    submitScoreToGlobal(currentPlayerName, score);
-                    drawText(); return;
-                }
-            }
-            obstacles = obstacles.filter(obs => !obs.markedForDeletion);
-            drawText(); frames++;
-            if (frames % 500 === 0) gameSpeed += 0.5;
-            requestAnimationFrame(animate);
-        }
-        
-        // Initial Draw
-        resizeCanvas();
-
-    </script>
-</body>
-</html>
+                    isGameO
