@@ -19,12 +19,17 @@
     <meta property="og:description" content="Can you beat the high score?">
     <meta property="og:type" content="website">
 
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7055039904830703"
+     crossorigin="anonymous"></script>
+
     <style>
         body {
             margin: 0; padding: 0; background-color: black; color: white;
             font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; overflow: hidden; user-select: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; /* Changed for scrolling */
+            min-height: 100vh; 
+            overflow-y: auto; /* Changed to allow scrolling for ads */
+            user-select: none;
         }
 
         /* --- START SCREEN STYLES --- */
@@ -68,7 +73,14 @@
         #start-btn:hover { background-color: white; box-shadow: 0 0 25px white; transform: scale(1.05); }
 
         /* --- GAME UI --- */
-        #game-container { display: none; /* Hidden initially */ width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
+        #game-container { 
+            display: none; /* Hidden initially */ 
+            width: 100%; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            margin-top: 50px; /* Space for top UI */
+        }
         
         canvas { border-bottom: 2px solid white; background-color: black; display: block; }
         #instructions { margin-top: 20px; color: #888; font-size: 14px; text-align: center; }
@@ -97,22 +109,20 @@
         }
 
         #footer-msg {
-            position: fixed;
-            bottom: 0;
-            left: 0;
             width: 100%;
             text-align: center;
             color: #FFFF00; /* Neon Yellow */
             font-family: 'Courier New', Courier, monospace;
             font-size: 12px;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.85); 
+            padding: 20px 10px;
+            background-color: #000; 
             text-shadow: 0 0 8px #FFFF00; 
             z-index: 200; 
             box-sizing: border-box;
             border-top: 1px solid #333;
             line-height: 1.4;
             animation: pulseYellow 2s infinite ease-in-out;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -138,9 +148,30 @@
         <div id="touch-layer"></div>
     </div>
 
+    <div style="margin-top: 20px; width: 100%; text-align: center; min-height: 90px;">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-7055039904830703"
+             data-ad-slot="REPLACE_WITH_YOUR_AD_UNIT_ID" 
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    <div style="max-width: 800px; margin: 20px auto; padding: 10px; color: #333; font-family: sans-serif; font-size: 12px; line-height: 1.6; text-align: center;">
+        <h2>About Side Scroller Sprint</h2>
+        <p>
+            Side Scroller Sprint is a fast-paced HTML5 endless runner game. 
+            Test your reflexes by jumping over obstacles in a neon-styled world. 
+            Compete for the high score on our global leaderboard powered by Firebase.
+            Master the jump mechanics to survive longer and speed up as you go!
+        </p>
+    </div>
+
     <div id="footer-msg">
-        SYSTEM NOTICE: Site maintenance this weekend. Expect periodic downtime.<br>
-        Yes, I'm adding ads (nothing obnoxious, just trying to make a little money from this if it works out).
+        SYSTEM NOTICE: Site maintenance this weekend.<br>
+        <a href="privacy.html" style="color: #FFFF00; text-decoration: underline; font-size: 10px;">Privacy Policy</a>
     </div>
 
     <script type="module">
