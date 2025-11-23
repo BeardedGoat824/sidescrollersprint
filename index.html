@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trump Jump</title>
-    
-    <link rel="manifest" href="manifest.json">
-
+    <title>Side Scroller Sprint</title>
+    <meta name="application-name" content="Side Scroller Sprint">
+    <meta name="apple-mobile-web-app-title" content="Side Scroller Sprint">
     <style>
         body {
             margin: 0; padding: 0; background-color: black; color: white;
@@ -32,6 +31,7 @@
                 0 0 30px #ff0000,  /* Red Outer */
                 0 0 40px #ff0000;  /* Extra Red Haze */
             font-size: 40px; margin-bottom: 10px; letter-spacing: 5px;
+            text-align: center;
         }
 
         #player-name-input {
@@ -106,7 +106,7 @@
 <body>
 
     <div id="start-screen">
-        <h1 class="title">TRUMP JUMP</h1>
+        <h1 class="title">SIDE SCROLLER SPRINT</h1>
         <input type="text" id="player-name-input" placeholder="ENTER NAME" maxlength="12" autocomplete="off">
         <button id="start-btn">INITIALIZE</button>
         <div style="margin-top: 20px; color: #555; font-size: 12px;">TOP SCORE: <span id="menu-high-score">0</span></div>
