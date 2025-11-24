@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Side Scroller Sprint</title>
+    <meta name="application-name" content="Side Scroller Sprint">
+    <meta name="apple-mobile-web-app-title" content="Side Scroller Sprint">
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <meta property="og:image" content="icon-512.png">
+    <meta property="og:title" content="Side Scroller Sprint">
+    <meta property="og:description" content="Can you beat the high score?">
+    <meta property="og:type" content="website">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7055039904830703" crossorigin="anonymous"></script>
+
+    <style>
+        html, body {
+            margin: 0; padding: 0; 
+            width: 100%; height: 100%; min-height: 100vh;
+            background-color: black; color: white;
+            font-family: 'Outfit', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            overflow-x: hidden; 
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* --- START SCREEN STYLES --- */
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black; z-index: 100;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        h1.title {
+            color: #ffffff; 
+            text-shadow: 
+                0 0 5px #ffffff,
+                0 0 15px #0055ff,
+                0 0 30px #ff0000,
+                0 0 40px #ff0000;
+            font-size: 40px; margin-bottom: 10px; letter-spacing: 2px;
+            text-align: center;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        #player-name-input {
+            background-color: #111; color: #00FF00; border: 2px solid #333;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 24px; text-align: center; padding: 10px;
+            margin: 20px 0; outline: none; text-transform: uppercase;
+            width: 250px; border-radius: 5px;
+        }
+        #player-name-input::placeholder { color: #444; }
+        #player-name-input:focus { border-color: #00FF00; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
+
+        #start-btn {
+            background-color: #00FF00; color: black; border: none;
+            padding: 15px 40px; font-size: 20px; font-weight: 900;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer; border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,255,0,0.5);
+            transition: all 0.2s;
+        }
+        #start-btn:hover { background-color: white; box-shadow: 0 0 25px white; transform: scale(1.05); }
+
+        /* --- GAME UI --- */
+        #game-container { 
+            display: none; 
+            width: 100%; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            margin-top: 50px; 
+            position: relative;
+            z-index: 1; 
+            pointer-events: none; 
+        }
+        
+        canvas, #instructions { pointer-events: auto; }
+
+        canvas { 
+            border-bottom: 2px solid white; 
+            background-color: black; 
+            display: block; 
+        }
+        #instructions { margin-top: 20px; color: #888; font-size: 14px; text-align: center; }
+        
+        /* PAUSE BUTTON */
+        #pause-btn {
+            position: fixed; 
+            top: 20px;
+            right: 20px; 
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-weight: 900;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            z-index: 200; 
+            font-size: 16px;
+            touch-action: manipulation;
+        }
+        #pause-btn:hover { background: white; color: black; }
+
+        /* LEADERBOARD STYLES */
+        #leaderboard-container {
+            position: absolute; top: 20px; left: 20px; 
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.9); border: 1px solid #333;
+            padding: 10px; z-index: 30; font-size: 12px;
+        }
+        #leaderboard-container h3 {
+            margin: 0 0 10px 0; text-align: center; border-bottom: 1px solid #555;
+            padding-bottom: 5px; font-size: 14px; color: #00FFFF;
+            font-weight: 700;
+        }
+        #lb-list { list-style: none; padding: 0; margin: 0; }
+        #lb-list li { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        #lb-list li span.lb-score { color: #FF00FF; font-weight: 700; }
+        .loading-text { text-align: center; color: #555; }
+        .error-text { text-align: center; color: #ff4444; font-size: 10px; }
+
+        /* --- FOOTER MESSAGE STYLES --- */
+        @keyframes pulseYellow {
+            0% { opacity: 1; text-shadow: 0 0 10px #FFFF00; }
+            50% { opacity: 0.6; text-shadow: 0 0 2px #888800; }
+            100% { opacity: 1; text-shadow: 0 0 10px #FFFF00; }
+        }
+
+        #footer-msg {
+            width: 100%;
+            text-align: center;
+            color: #FFFF00; 
+            font-family: 'Outfit', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 20px 10px;
+            background-color: #000; 
+            text-shadow: 0 0 8px #FFFF00; 
+            z-index: 200; 
+            box-sizing: border-box;
+            border-top: 1px solid #333;
+            line-height: 1.4;
+            animation: pulseYellow 2s infinite ease-in-out;
+            margin-top: 20px;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 600px) {
+            #game-container { margin-top: 180px !important; }
+            h1.title { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1 class="title">SIDE SCROLLER SPRINT</h1>
+        <input type="text" id="player-name-input" placeholder="ENTER NAME" maxlength="12" autocomplete="off">
+        <button id="start-btn">INITIALIZE</button>
+        <div style="margin-top: 20px; color: #555; font-size: 12px; font-weight: 700;">TOP SCORE: <span id="menu-high-score">0</span></div>
+        <div id="firebase-status" style="margin-top: 10px; font-size: 10px; color: #888;"></div>
+    </div>
+
+    <div id="leaderboard-container">
+        <h3>GLOBAL TOP 5</h3>
+        <ul id="lb-list">
+            <li class="loading-text">Loading...</li>
+        </ul>
+    </div>
+
+    <button id="pause-btn" style="display:none;">II</button>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="instructions">Press SPACE or TAP ANYWHERE to jump</div>
+    </div>
+
+    <div style="margin-top: 20px; width: 100%; text-align: center; min-height: 90px; z-index: 10;">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-7055039904830703"
+             data-ad-slot="4684990666" 
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    <div style="max-width: 800px; margin: 20px auto; padding: 10px; color: #333; font-family: 'Outfit', sans-serif; font-size: 12px; line-height: 1.6; text-align: center; z-index: 10;">
+        <h2>About Side Scroller Sprint</h2>
+        <p>
+            Side Scroller Sprint is a fast-paced HTML5 endless runner game. 
+            Test your reflexes by jumping over obstacles in a neon-styled world. 
+            Compete for the high score on our global leaderboard powered by Firebase.
+        </p>
+    </div>
+
+    <div id="footer-msg">
+        SYSTEM NOTICE: Site maintenance this weekend.<br>
+        <a href="privacy.html" style="color: #FFFF00; text-decoration: underline; font-size: 10px;">Privacy Policy</a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getDatabase, ref, set, get, child, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCiRUZZsaBiGKyYGlGc4coI14MG23bzT3g",
+            authDomain: "game-dd2e6.firebaseapp.com",
+            databaseURL: "https://game-dd2e6-default-rtdb.firebaseio.com",
+            projectId: "game-dd2e6",
+            storageBucket: "game-dd2e6.firebasestorage.app",
+            messagingSenderId: "989207031024",
+            appId: "1:989207031024:web:72e77a4cf766e564f66635"
+        };
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const gameContainer = document.getElementById('game-container');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const nameInput = document.getElementById('player-name-input');
+        const menuHighScoreSpan = document.getElementById('menu-high-score');
+        const firebaseStatus = document.getElementById('firebase-status');
+        const lbList = document.getElementById('lb-list');
+        const lbContainer = document.getElementById('leaderboard-container');
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game Variables
+        let frames = 0;
+        let score = 0;
+        let highScore = 0;
+        let gameSpeed = 5;
+        let isGameOver = false;
+        let isGameRunning = false;
+        let isPaused = false;
+        let obstacles = [];
+        let currentPlayerName = "ANON";
+        let db = null;
+        let firebaseInitialized = false;
+        
+        let framesSinceLastSpawn = 0;
+
+        // --- OBJECT POOLING ---
+        const obstaclePool = [];
+        const MAX_POOL_SIZE = 20;
+
+        function getObstacle() {
+            if (obstaclePool.length > 0) {
+                const obs = obstaclePool.pop();
+                obs.reset(); 
+                return obs;
+            }
+            return new Obstacle();
+        }
+
+        // --- OPTIMIZED RETURN OBSTACLE ---
+        function returnObstacle(obstacle) {
+            if (obstaclePool.length < MAX_POOL_SIZE) {
+                obstaclePool.push(obstacle);
+            } else {
+                // Explicitly nullify references
+                obstacle.x = obstacle.y = obstacle.w = obstacle.h = null;
+            }
+        }
+
+        // --- FIREBASE & INIT ---
+        function sanitizeFirebaseKey(key) {
+            return key.replace(/[.#$[\]\/]/g, "").substring(0, 50);
+        }
+
+        function initializeFirebaseWithRetry(retries = 3) {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getDatabase(app);
+                firebaseInitialized = true;
+                firebaseStatus.innerHTML = '<span style="color:#00FF00">✓ Online</span>';
+                listenForLeaderboardUpdates();
+                fetchMyPersonalBest();
+            } catch (e) {
+                console.error("Firebase Init Error:", e);
+                if (retries > 0) {
+                    firebaseStatus.innerHTML = `<span style="color:#FFAA00">Retrying... (${retries})</span>`;
+                    setTimeout(() => initializeFirebaseWithRetry(retries - 1), 1000);
+                } else {
+                    firebaseStatus.innerHTML = '<span style="color:#FF4444">✗ Offline - Scores disabled</span>';
+                    lbList.innerHTML = '<li class="error-text">Connection Failed</li>';
+                }
+            }
+        }
+        initializeFirebaseWithRetry();
+
+        const playerImage = new Image();
+        playerImage.src = 'trump.png'; 
+        let imageLoaded = false;
+        playerImage.onload = function() { imageLoaded = true; };
+        playerImage.onerror = function() { imageLoaded = false; };
+
+        // --- MENU LOGIC ---
+        const savedName = localStorage.getItem('neonJumperName');
+        const savedScore = localStorage.getItem('jumperHighScore');
+        if (savedName) nameInput.value = savedName;
+        if (savedScore) {
+            highScore = parseInt(savedScore);
+            menuHighScoreSpan.innerText = highScore;
+        }
+
+        function startGame() {
+            const nameVal = nameInput.value.trim();
+            currentPlayerName = nameVal || "ANON";
+            localStorage.setItem('neonJumperName', currentPlayerName);
+            if (firebaseInitialized) fetchMyPersonalBest();
+
+            startScreen.style.display = 'none';
+            gameContainer.style.display = 'flex'; 
+            pauseBtn.style.display = 'block';
+            lbContainer.style.display = 'block'; 
+            
+            isGameRunning = true;
+            isPaused = false;
+            pauseBtn.innerText = "II";
+            resetGame();
+        }
+
+        function togglePause() {
+            if (isGameOver || !isGameRunning) return;
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                pauseBtn.innerText = "▶"; 
+                drawPauseScreen();
+            } else {
+                pauseBtn.innerText = "II"; 
+                animate(); 
+            }
+        }
+
+        startBtn.addEventListener('click', startGame);
+        pauseBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            togglePause();
+            pauseBtn.blur(); 
+        });
+
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startGame();
+        });
+
+        // --- SCORE & LEADERBOARD LOGIC ---
+        function submitScoreToGlobal(name, currentScore) {
+            if (!db || !firebaseInitialized) return;
+            const safeKey = sanitizeFirebaseKey(name);
+            const dbRef = ref(db);
+            get(child(dbRef, `scores/${safeKey}`)).then((snapshot) => {
+                let serverScore = 0;
+                if (snapshot.exists()) serverScore = parseInt(snapshot.val().score) || 0;
+                if (currentScore > serverScore) {
+                    set(ref(db, 'scores/' + safeKey), { name: name, score: currentScore, timestamp: Date.now() });
+                }
+            });
+        }
+
+        function fetchMyPersonalBest() {
+            if (!db || !firebaseInitialized || currentPlayerName === "ANON") return;
+            const safeKey = sanitizeFirebaseKey(currentPlayerName);
+            get(child(ref(db), `scores/${safeKey}`)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const serverData = snapshot.val();
+                    if (serverData.score > highScore) {
+                        highScore = parseInt(serverData.score);
+                        localStorage.setItem('jumperHighScore', highScore);
+                        menuHighScoreSpan.innerText = highScore;
+                    }
+                }
+            });
+        }
+
+        function listenForLeaderboardUpdates() {
+            if (!db || !firebaseInitialized) return;
+            const scoresRef = query(ref(db, 'scores'), orderByChild('score'), limitToLast(5));
+            onValue(scoresRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) { lbList.innerHTML = '<li class="loading-text">No Scores Yet</li>'; return; }
+                const sortedScores = Object.values(data).sort((a, b) => b.score - a.score);
+                updateLeaderboardUI(sortedScores);
+            });
+        }
+
+        function updateLeaderboardUI(entries) {
+            lbList.innerHTML = "";
+            entries.forEach(entry => {
+                const li = document.createElement('li');
+                li.innerHTML = `${entry.name} <span class="lb-score">${entry.score}</span>`;
+                lbList.appendChild(li);
+            });
+        }
+
+        // --- GAME LOGIC ---
+        function resizeCanvas() {
+            canvas.width = Math.min(window.innerWidth - 20, 800);
+            canvas.height = 300;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const obstacleColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#FFA500', '#9400D3', '#FF1493'];
+
+        const player = {
+            x: 50, y: 150, radius: 25, 
+            dy: 0, jumpForce: 12, gravity: 0.6, grounded: false,
+            draw: function() {
+                if (imageLoaded) {
+                    const aspect = playerImage.width / playerImage.height;
+                    let drawW = this.radius * 2;
+                    let drawH = this.radius * 2;
+                    if (aspect > 1) drawH = drawW / aspect; else drawW = drawH * aspect;
+                    const drawX = this.x - (drawW / 2);
+                    const drawY = this.y - (drawH / 2);
+                    ctx.drawImage(playerImage, drawX, drawY, drawW, drawH);
+                } else {
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'white'; ctx.fill(); ctx.closePath();
+                    ctx.beginPath(); ctx.arc(this.x - 8, this.y - 5, 5, 0, Math.PI * 2);
+                    ctx.arc(this.x + 8, this.y - 5, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'black'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(this.x, this.y + 5, 8, 0, Math.PI);
+                    ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.stroke();
+                }
+            },
+            jump: function() {
+                if (this.grounded) { this.dy = -this.jumpForce; this.grounded = false; }
+            },
+            update: function() {
+                this.y += this.dy;
+                if (this.y + this.radius < canvas.height) {
+                    this.dy += this.gravity; this.grounded = false;
+                } else {
+                    this.dy = 0; this.grounded = true; this.y = canvas.height - this.radius;
+                }
+                this.draw();
+            }
+        };
+
+        class Obstacle {
+            constructor() { this.reset(); }
+            reset() {
+                this.w = 20 + Math.random() * 30; 
+                this.h = 30 + Math.random() * 50;
+                this.x = canvas.width; 
+                this.y = canvas.height - this.h;
+                this.color = obstacleColors[Math.floor(Math.random() * obstacleColors.length)];
+                this.markedForDeletion = false;
+            }
+            draw() { ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.w, this.h); }
+            update() {
+                this.x -= gameSpeed;
+                if (this.x + this.w < 0) { this.markedForDeletion = true; score++; }
+                this.draw();
+            }
+        }
+
+        // --- FIXED INPUT HANDLING ---
+        function handleInput(e) {
+            if (!isGameRunning) return;
+            if (document.activeElement === nameInput) return;
+            
+            // STRICT FILTER: Only block Jump if clicking a Button or Input.
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+            if (isPaused) return;
+
+            if (isGameOver) {
+                resetGame();
+            } else {
+                player.jump();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!isGameRunning) return;
+            if (e.code === 'KeyP') { togglePause(); } 
+            else if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                handleInput(e);
+            }
+        });
+
+        window.addEventListener('touchstart', (e) => {
+            if (isGameRunning && !isPaused && !isGameOver) {
+                if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') {
+                   // e.preventDefault(); 
+                }
+            }
+            handleInput(e);
+        }, { passive: false });
+
+        window.addEventListener('mousedown', (e) => {
+            handleInput(e);
+        });
+
+        // --- FIXED SPAWN LOGIC (NO OVERLAPS) ---
+        function spawnObstacles() {
+            let spawnRate = Math.max(60, 150 - gameSpeed * 5);
+            
+            let shouldSpawn = false;
+            if (frames % Math.floor(spawnRate) === 0) { shouldSpawn = true; }
+            if (framesSinceLastSpawn > 120) { shouldSpawn = true; }
+
+            if (shouldSpawn) {
+                let safeToSpawn = true;
+                let minGap = 220 + (gameSpeed * 10);
+
+                if (obstacles.length > 0) {
+                    const lastObs = obstacles[obstacles.length - 1];
+                    const gap = canvas.width - (lastObs.x + lastObs.w);
+                    if (gap < minGap) {
+                        safeToSpawn = false;
+                    }
+                }
+
+                if (safeToSpawn) {
+                    obstacles.push(getObstacle());
+                    framesSinceLastSpawn = 0;
+                }
+            }
+            framesSinceLastSpawn++;
+        }
+
+        function checkCollision(player, obstacle) {
+            const distX = Math.abs(player.x - obstacle.x - obstacle.w / 2);
+            const distY = Math.abs(player.y - obstacle.y - obstacle.h / 2);
+            if (distX > (obstacle.w / 2 + player.radius)) return false;
+            if (distY > (obstacle.h / 2 + player.radius)) return false;
+            if (distX <= (obstacle.w / 2)) return true;
+            if (distY <= (obstacle.h / 2)) return true;
+            const dx = distX - obstacle.w / 2;
+            const dy = distY - obstacle.h / 2;
+            return (dx * dx + dy * dy <= (player.radius * player.radius));
+        }
+
+        function drawPauseScreen() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'center';
+            ctx.font = '900 40px "Outfit", sans-serif'; 
+            ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+            ctx.font = 'bold 20px "Outfit", sans-serif'; 
+            ctx.fillText('Tap button to resume', canvas.width / 2, canvas.height / 2 + 40);
+        }
+
+        function drawText() {
+            ctx.fillStyle = 'white'; 
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 20px "Outfit", sans-serif';
+            
+            ctx.fillText(`${currentPlayerName}`, 20, 30);
+            ctx.fillText(`Score: ${score}`, 20, 60);
+            ctx.fillText(`High: ${highScore}`, 20, 85);
+
+            if (isGameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#FF0000'; ctx.textAlign = 'center';
+                ctx.font = '900 40px "Outfit", sans-serif'; 
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillStyle = 'white'; ctx.font = 'bold 20px "Outfit", sans-serif'; 
+                ctx.fillText('Tap anywhere to Restart', canvas.width / 2, canvas.height / 2 + 20);
+            }
+        }
+
+        function resetGame() {
+            isGameOver = false; score = 0; gameSpeed = 5; 
+            obstacles.forEach(obs => returnObstacle(obs));
+            obstacles = []; 
+            frames = 0;
+            framesSinceLastSpawn = 0;
+            player.y = 150; player.dy = 0; 
+            animate();
+        }
+
+        function animate() {
+            if (!isGameRunning || isGameOver) return;
+            if (isPaused) return; 
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            player.update(); 
+            spawnObstacles();
+
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                obs.update();
+                if (checkCollision(player, obs)) {
+                    isGameOver = true;
+                    if (score > highScore) {
+                        highScore = score;
+                        try { localStorage.setItem('jumperHighScore', highScore); } catch(e){}
+                    }
+                    submitScoreToGlobal(currentPlayerName, score);
+                    drawText(); 
+                    return;
+                }
+            }
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                if (obstacles[i].markedForDeletion) {
+                    returnObstacle(obstacles[i]);
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            drawText(); 
+            frames++;
+            if (frames % 500 === 0 && gameSpeed < 15) gameSpeed += 0.5;
+            requestAnimationFrame(animate);
+        }
+        
+        resizeCanvas();
+    </script>
+</body>
+</html>
