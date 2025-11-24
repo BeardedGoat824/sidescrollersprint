@@ -5,16 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Side Scroller Sprint</title>
     <meta name="application-name" content="Side Scroller Sprint">
-    <meta name="apple-mobile-web-app-title" content="Side Scroller Sprint">
     
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
     <link rel="apple-touch-icon" href="icon-192.png">
 
-    <meta property="og:image" content="icon-512.png">
     <meta property="og:title" content="Side Scroller Sprint">
-    <meta property="og:description" content="Can you beat the high score?">
     <meta property="og:type" content="website">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,53 +38,39 @@
 
         h1.title {
             color: #ffffff; 
-            text-shadow: 
-                0 0 5px #ffffff,
-                0 0 15px #0055ff,
-                0 0 30px #ff0000,
-                0 0 40px #ff0000;
+            text-shadow: 0 0 5px #ffffff, 0 0 15px #0055ff, 0 0 30px #ff0000;
             font-size: 40px; margin-bottom: 10px; letter-spacing: 2px;
-            text-align: center;
-            font-weight: 900;
-            text-transform: uppercase;
+            text-align: center; font-weight: 900; text-transform: uppercase;
         }
 
         #player-name-input {
             background-color: #111; color: #00FF00; border: 2px solid #333;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
+            font-family: 'Outfit', sans-serif; font-weight: 700;
             font-size: 24px; text-align: center; padding: 10px;
             margin: 20px 0; outline: none; text-transform: uppercase;
             width: 250px; border-radius: 5px;
         }
-        #player-name-input::placeholder { color: #444; }
         #player-name-input:focus { border-color: #00FF00; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
 
         #start-btn {
             background-color: #00FF00; color: black; border: none;
             padding: 15px 40px; font-size: 20px; font-weight: 900;
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer; border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0,255,0,0.5);
-            transition: all 0.2s;
+            font-family: 'Outfit', sans-serif; cursor: pointer; border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,255,0,0.5); transition: all 0.2s;
         }
-        #start-btn:hover { background-color: white; box-shadow: 0 0 25px white; transform: scale(1.05); }
+        #start-btn:hover { background-color: white; transform: scale(1.05); }
 
         /* --- GAME UI --- */
         #game-container { 
-            display: none; 
-            width: 100%; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            margin-top: 50px; 
+            display: none; width: 100%; flex-direction: column; 
+            align-items: center; justify-content: center; margin-top: 50px; 
         }
         
         canvas { border-bottom: 2px solid white; background-color: black; display: block; }
         #instructions { margin-top: 20px; color: #888; font-size: 14px; text-align: center; }
         #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer; }
         
-        /* LEADERBOARD STYLES */
+        /* LEADERBOARD */
         #leaderboard-container {
             position: absolute; top: 20px; right: 20px; width: 220px;
             background-color: rgba(0, 0, 0, 0.9); border: 1px solid #333;
@@ -97,49 +78,24 @@
         }
         #leaderboard-container h3 {
             margin: 0 0 10px 0; text-align: center; border-bottom: 1px solid #555;
-            padding-bottom: 5px; font-size: 14px; color: #00FFFF;
-            font-weight: 700;
+            padding-bottom: 5px; font-size: 14px; color: #00FFFF; font-weight: 700;
         }
         #lb-list { list-style: none; padding: 0; margin: 0; }
         #lb-list li { display: flex; justify-content: space-between; margin-bottom: 4px; }
         #lb-list li span.lb-score { color: #FF00FF; font-weight: 700; }
-        .loading-text { text-align: center; color: #555; }
 
-        /* --- FOOTER MESSAGE STYLES --- */
-        @keyframes pulseYellow {
-            0% { opacity: 1; text-shadow: 0 0 10px #FFFF00; }
-            50% { opacity: 0.6; text-shadow: 0 0 2px #888800; }
-            100% { opacity: 1; text-shadow: 0 0 10px #FFFF00; }
-        }
-
+        /* --- FOOTER & GUIDE --- */
         #footer-msg {
-            width: 100%;
-            text-align: center;
-            color: #FFFF00; 
-            font-family: 'Outfit', sans-serif;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 20px 10px;
-            background-color: #000; 
-            text-shadow: 0 0 8px #FFFF00; 
-            z-index: 200; 
-            box-sizing: border-box;
-            border-top: 1px solid #333;
-            line-height: 1.4;
-            animation: pulseYellow 2s infinite ease-in-out;
-            margin-top: 20px;
+            width: 100%; text-align: center; color: #FFFF00; 
+            font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700;
+            padding: 20px 10px; background-color: #000; 
+            text-shadow: 0 0 8px #FFFF00; z-index: 200; 
+            border-top: 1px solid #333; margin-top: 20px;
         }
 
-        /* --- MOBILE LAYOUT FIXES --- */
         @media (max-width: 600px) {
             #game-container { margin-top: 180px !important; }
-            #leaderboard-container {
-                width: 90%;
-                left: 50%;
-                transform: translateX(-50%);
-                right: auto;
-                top: 10px;
-            }
+            #leaderboard-container { width: 90%; left: 50%; transform: translateX(-50%); top: 10px; }
         }
     </style>
 </head>
@@ -159,7 +115,7 @@
         </ul>
     </div>
 
-    <div id="game-container" style="display:none;">
+    <div id="game-container">
         <canvas id="gameCanvas"></canvas>
         <div id="instructions">Press SPACE or TAP SCREEN to jump</div>
         <div id="touch-layer"></div>
@@ -173,51 +129,26 @@
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
         <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
+            try {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            } catch (e) {
+                console.log("AdSense failed to load (local test or blocker).");
+            }
         </script>
     </div>
 
     <div style="max-width: 800px; margin: 40px auto; padding: 20px; color: #ccc; font-family: 'Outfit', sans-serif; font-size: 14px; line-height: 1.8; text-align: left; background-color: #111; border: 1px solid #333; border-radius: 8px;">
-        <h2 style="color: #00FF00; text-align: center; text-transform: uppercase; margin-bottom: 20px;">Official Game Guide & Manual</h2>
-        
+        <h2 style="color: #00FF00; text-align: center; text-transform: uppercase; margin-bottom: 20px;">Official Game Guide</h2>
         <h3 style="color: #fff;">Introduction</h3>
-        <p>
-            <strong>Side Scroller Sprint</strong> is a high-intensity, endless runner arcade game developed in HTML5. Designed to test reaction time and precision, the game strips away complex mechanics to focus on one core skill: timing. As the player accelerates through a neon-styled digital landscape, obstacles appear with increasing frequency and speed. Your objective is simple but challenging—survive as long as possible to climb the global leaderboard.
-        </p>
-
+        <p>Side Scroller Sprint is a high-intensity, endless runner arcade game developed in HTML5. Designed to test reaction time and precision, the game strips away complex mechanics to focus on one core skill: timing.</p>
         <h3 style="color: #fff;">How to Play</h3>
-        <p>
-            The controls are optimized for both desktop and mobile devices, ensuring a seamless experience across platforms:
-        </p>
         <ul style="list-style-type: square; margin-left: 20px; color: #aaa;">
-            <li><strong>Desktop:</strong> Press the <code>SPACEBAR</code> or the <code>UP ARROW</code> key to perform a jump.</li>
-            <li><strong>Mobile / Tablet:</strong> Tap anywhere on the screen (or the dedicated touch layer) to jump.</li>
-            <li><strong>The Goal:</strong> Clear the incoming colored crates and obstacles. Hitting any part of an obstacle ends the run immediately.</li>
+            <li><strong>Desktop:</strong> Press <code>SPACEBAR</code> or <code>UP ARROW</code> to jump.</li>
+            <li><strong>Mobile:</strong> Tap anywhere on the screen.</li>
         </ul>
-
-        <h3 style="color: #fff;">Game Mechanics & Scoring</h3>
-        <p>
-            Unlike standard platformers, Side Scroller Sprint utilizes a <strong>progressive velocity system</strong>. Every 500 frames, the game speed increases incrementally. This means the rhythm you establish in the first 30 seconds will not work one minute in. 
-        </p>
-        <p>
-            <strong>Scoring:</strong> You earn 1 point for every obstacle successfully cleared.
-            <br>
-            <strong>Global Leaderboard:</strong> This game is integrated with a real-time Firebase database. If you beat your personal high score, it is automatically compared against players worldwide. Only the top 5 scores make it to the main menu display.
-        </p>
-
-        <h3 style="color: #fff;">Strategy & Tips</h3>
-        <p>
-            To reach the top of the leaderboard, players must master the "short hop" vs. "long jump" timing. While the jump height is fixed, initiating a jump too early will cause you to land <em>on</em> the obstacle, triggering a game over. Initiating too late leads to a collision.
-        </p>
-        <p>
-            <strong>Pro Tip:</strong> Focus your eyes on the right side of the screen rather than your character. Reacting to obstacles as they spawn gives you a split-second advantage compared to watching them arrive at the player's position.
-        </p>
-
-        <hr style="border-color: #333; margin: 30px 0;">
-        
-        <p style="font-size: 12px; text-align: center; color: #666;">
-            <em>Technical Specs: Built with Vanilla JavaScript and HTML5 Canvas. Powered by Google Firebase for real-time data persistence.</em>
-        </p>
+        <h3 style="color: #fff;">Mechanics & Scoring</h3>
+        <p>Every 500 frames, the game speed increases. You earn 1 point for every obstacle cleared. Global high scores are saved via Firebase.</p>
+        <p style="font-size: 12px; text-align: center; color: #666; margin-top:20px;"><em>Built with Vanilla JavaScript and HTML5 Canvas.</em></p>
     </div>
 
     <div id="footer-msg">
@@ -229,7 +160,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
         import { getDatabase, ref, set, get, child, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-        // --- YOUR FIREBASE CONFIG ---
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyCiRUZZsaBiGKyYGlGc4coI14MG23bzT3g",
             authDomain: "game-dd2e6.firebaseapp.com",
@@ -239,9 +170,7 @@
             messagingSenderId: "989207031024",
             appId: "1:989207031024:web:72e77a4cf766e564f66635"
         };
-        // ---------------------------
 
-        // Initialize Firebase
         let db;
         try {
             const app = initializeApp(firebaseConfig);
@@ -249,7 +178,6 @@
             listenForLeaderboardUpdates();
         } catch (e) {
             console.error("Firebase Init Error:", e);
-            document.getElementById('lb-list').innerHTML = '<li class="loading-text" style="color:red">Config Error</li>';
         }
 
         // Elements
@@ -258,21 +186,18 @@
         const startBtn = document.getElementById('start-btn');
         const nameInput = document.getElementById('player-name-input');
         const menuHighScoreSpan = document.getElementById('menu-high-score');
-        
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const touchLayer = document.getElementById('touch-layer');
         const lbList = document.getElementById('lb-list');
 
-        // --- LOAD PLAYER IMAGE ---
+        // Player Image
         const playerImage = new Image();
-        playerImage.src = 'trump.png'; 
-        
+        playerImage.src = 'trump.png';
         let imageLoaded = false;
         playerImage.onload = function() { imageLoaded = true; };
-        playerImage.onerror = function() { imageLoaded = false; };
 
-        // Game Variables
+        // Variables
         let frames = 0;
         let score = 0;
         let highScore = 0;
@@ -285,13 +210,14 @@
         // --- MENU LOGIC ---
         const savedName = localStorage.getItem('neonJumperName');
         const savedScore = localStorage.getItem('jumperHighScore');
-        if (savedName) nameInput.value = savedName;
-        if (savedScore) {
+        if (savedName && nameInput) nameInput.value = savedName;
+        if (savedScore && menuHighScoreSpan) {
             highScore = parseInt(savedScore);
             menuHighScoreSpan.innerText = highScore;
         }
 
         function startGame() {
+            console.log("Starting Game...");
             const nameVal = nameInput.value.trim();
             currentPlayerName = nameVal || "ANON";
             localStorage.setItem('neonJumperName', currentPlayerName);
@@ -301,36 +227,34 @@
             gameContainer.style.display = 'flex'; 
             
             isGameRunning = true;
+            resizeCanvas();
             resetGame();
         }
 
-        startBtn.addEventListener('click', startGame);
-        nameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') startGame();
-        });
+        if(startBtn) {
+            startBtn.addEventListener('click', startGame);
+        }
+        if(nameInput) {
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') startGame();
+            });
+        }
 
-        // --- SCORE LOGIC ---
+        // --- SCORE & DB LOGIC ---
         function submitScoreToGlobal(name, currentScore) {
             if (!db) return;
             const safeKey = name.replace(/[.#$[\]]/g, "");
-            const dbRef = ref(db);
-
-            get(child(dbRef, `scores/${safeKey}`)).then((snapshot) => {
+            get(child(ref(db), `scores/${safeKey}`)).then((snapshot) => {
                 let serverScore = 0;
                 if (snapshot.exists()) serverScore = parseInt(snapshot.val().score) || 0;
-
                 if (currentScore > serverScore) {
-                    set(ref(db, 'scores/' + safeKey), {
-                        name: name, score: currentScore, timestamp: Date.now()
-                    });
+                    set(ref(db, 'scores/' + safeKey), { name: name, score: currentScore, timestamp: Date.now() });
                 }
             });
         }
 
         function fetchMyPersonalBest() {
-            if (!db) return;
-            if(currentPlayerName === "ANON") return;
-            
+            if (!db || currentPlayerName === "ANON") return;
             const safeKey = currentPlayerName.replace(/[.#$[\]]/g, "");
             get(child(ref(db), `scores/${safeKey}`)).then((snapshot) => {
                 if (snapshot.exists()) {
@@ -346,14 +270,11 @@
         function listenForLeaderboardUpdates() {
             if (!db) return;
             const scoresRef = query(ref(db, 'scores'), orderByChild('score'), limitToLast(5));
-            
             onValue(scoresRef, (snapshot) => {
                 const data = snapshot.val();
                 if (!data) { lbList.innerHTML = '<li class="loading-text">No Scores Yet</li>'; return; }
                 const sortedScores = Object.values(data).sort((a, b) => b.score - a.score);
                 updateLeaderboardUI(sortedScores);
-            }, (error) => {
-                lbList.innerHTML = `<li class="loading-text" style="color:red; font-size:10px">Permission Error</li>`;
             });
         }
 
@@ -366,15 +287,14 @@
             });
         }
 
-        // --- GAME LOGIC ---
+        // --- ENGINE ---
         function resizeCanvas() {
             canvas.width = Math.min(window.innerWidth - 20, 800);
             canvas.height = 300;
         }
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
 
-        const obstacleColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#FFA500', '#9400D3', '#FF1493'];
+        const obstacleColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF'];
 
         const player = {
             x: 50, y: 150, radius: 25, 
@@ -385,25 +305,17 @@
                     let drawW = this.radius * 2;
                     let drawH = this.radius * 2;
                     if (aspect > 1) drawH = drawW / aspect; else drawW = drawH * aspect;
-                    const drawX = this.x - (drawW / 2);
-                    const drawY = this.y - (drawH / 2);
-                    ctx.drawImage(playerImage, drawX, drawY, drawW, drawH);
+                    ctx.drawImage(playerImage, this.x - drawW/2, this.y - drawH/2, drawW, drawH);
                 } else {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                     ctx.fillStyle = 'white'; ctx.fill(); ctx.closePath();
                 }
             },
-            jump: function() {
-                if (this.grounded) { this.dy = -this.jumpForce; this.grounded = false; }
-            },
+            jump: function() { if (this.grounded) { this.dy = -this.jumpForce; this.grounded = false; } },
             update: function() {
                 this.y += this.dy;
-                if (this.y + this.radius < canvas.height) {
-                    this.dy += this.gravity; this.grounded = false;
-                } else {
-                    this.dy = 0; this.grounded = true; this.y = canvas.height - this.radius;
-                }
+                if (this.y + this.radius < canvas.height) { this.dy += this.gravity; this.grounded = false; }
+                else { this.dy = 0; this.grounded = true; this.y = canvas.height - this.radius; }
                 this.draw();
             }
         };
@@ -429,18 +341,9 @@
             if (isGameOver) resetGame(); else player.jump();
         }
 
-        window.addEventListener('keydown', (e) => {
-            if(isGameRunning) {
-                if (e.code === 'Space' || e.code === 'ArrowUp') handleInput(e);
-            }
-        });
-        touchLayer.addEventListener('touchstart', (e) => {
-            e.preventDefault(); 
-            if(isGameRunning) handleInput(e);
-        });
-        touchLayer.addEventListener('mousedown', (e) => {
-            if(isGameRunning) handleInput(e);
-        });
+        window.addEventListener('keydown', (e) => { if(isGameRunning) if (e.code === 'Space' || e.code === 'ArrowUp') handleInput(e); });
+        touchLayer.addEventListener('touchstart', (e) => { e.preventDefault(); if(isGameRunning) handleInput(e); });
+        touchLayer.addEventListener('mousedown', (e) => { if(isGameRunning) handleInput(e); });
 
         function spawnObstacles() {
             let spawnRate = Math.max(60, 150 - gameSpeed * 5);
@@ -451,4 +354,53 @@
             const distX = Math.abs(player.x - obstacle.x - obstacle.w / 2);
             const distY = Math.abs(player.y - obstacle.y - obstacle.h / 2);
             if (distX > (obstacle.w / 2 + player.radius)) return false;
-            i
+            if (distY > (obstacle.h / 2 + player.radius)) return false;
+            if (distX <= (obstacle.w / 2)) return true;
+            if (distY <= (obstacle.h / 2)) return true;
+            return ((distX - obstacle.w/2)**2 + (distY - obstacle.h/2)**2 <= (player.radius**2));
+        }
+
+        function drawText() {
+            ctx.fillStyle = 'white'; ctx.textAlign = 'left'; ctx.font = 'bold 20px "Outfit", sans-serif';
+            ctx.fillText(`${currentPlayerName}`, 20, 30);
+            ctx.fillText(`Score: ${score}`, 20, 60);
+            ctx.fillText(`High: ${highScore}`, 20, 85);
+
+            if (isGameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#FF0000'; ctx.textAlign = 'center'; ctx.font = '900 40px "Outfit", sans-serif'; 
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillStyle = 'white'; ctx.font = 'bold 20px "Outfit", sans-serif'; 
+                ctx.fillText('Tap to Restart', canvas.width / 2, canvas.height / 2 + 20);
+            }
+        }
+
+        function resetGame() {
+            isGameOver = false; score = 0; gameSpeed = 5; obstacles = []; frames = 0;
+            player.y = 150; player.dy = 0; animate();
+        }
+
+        function animate() {
+            if (!isGameRunning || isGameOver) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            player.update(); spawnObstacles();
+            obstacles.forEach(obs => {
+                obs.update();
+                if (checkCollision(player, obs)) {
+                    isGameOver = true;
+                    if (score > highScore) { highScore = score; try{localStorage.setItem('jumperHighScore', highScore);}catch(e){} }
+                    submitScoreToGlobal(currentPlayerName, score);
+                    drawText();
+                }
+            });
+            if(isGameOver) return;
+            obstacles = obstacles.filter(obs => !obs.markedForDeletion);
+            drawText(); frames++;
+            if (frames % 500 === 0) gameSpeed += 0.5;
+            requestAnimationFrame(animate);
+        }
+        
+        resizeCanvas();
+    </script>
+</body>
+</html>
