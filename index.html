@@ -176,13 +176,47 @@
              (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
     </div>
-    <div style="max-width: 800px; margin: 20px auto; padding: 10px; color: #333; font-family: 'Outfit', sans-serif; font-size: 12px; line-height: 1.6; text-align: center;">
-        <h2>About Side Scroller Sprint</h2>
+
+    <div style="max-width: 800px; margin: 40px auto; padding: 20px; color: #ccc; font-family: 'Outfit', sans-serif; font-size: 14px; line-height: 1.8; text-align: left; background-color: #111; border: 1px solid #333; border-radius: 8px;">
+        <h2 style="color: #00FF00; text-align: center; text-transform: uppercase; margin-bottom: 20px;">Official Game Guide & Manual</h2>
+        
+        <h3 style="color: #fff;">Introduction</h3>
         <p>
-            Side Scroller Sprint is a fast-paced HTML5 endless runner game. 
-            Test your reflexes by jumping over obstacles in a neon-styled world. 
-            Compete for the high score on our global leaderboard powered by Firebase.
-            Master the jump mechanics to survive longer and speed up as you go!
+            <strong>Side Scroller Sprint</strong> is a high-intensity, endless runner arcade game developed in HTML5. Designed to test reaction time and precision, the game strips away complex mechanics to focus on one core skill: timing. As the player accelerates through a neon-styled digital landscape, obstacles appear with increasing frequency and speed. Your objective is simple but challenging—survive as long as possible to climb the global leaderboard.
+        </p>
+
+        <h3 style="color: #fff;">How to Play</h3>
+        <p>
+            The controls are optimized for both desktop and mobile devices, ensuring a seamless experience across platforms:
+        </p>
+        <ul style="list-style-type: square; margin-left: 20px; color: #aaa;">
+            <li><strong>Desktop:</strong> Press the <code>SPACEBAR</code> or the <code>UP ARROW</code> key to perform a jump.</li>
+            <li><strong>Mobile / Tablet:</strong> Tap anywhere on the screen (or the dedicated touch layer) to jump.</li>
+            <li><strong>The Goal:</strong> Clear the incoming colored crates and obstacles. Hitting any part of an obstacle ends the run immediately.</li>
+        </ul>
+
+        <h3 style="color: #fff;">Game Mechanics & Scoring</h3>
+        <p>
+            Unlike standard platformers, Side Scroller Sprint utilizes a <strong>progressive velocity system</strong>. Every 500 frames, the game speed increases incrementally. This means the rhythm you establish in the first 30 seconds will not work one minute in. 
+        </p>
+        <p>
+            <strong>Scoring:</strong> You earn 1 point for every obstacle successfully cleared.
+            <br>
+            <strong>Global Leaderboard:</strong> This game is integrated with a real-time Firebase database. If you beat your personal high score, it is automatically compared against players worldwide. Only the top 5 scores make it to the main menu display.
+        </p>
+
+        <h3 style="color: #fff;">Strategy & Tips</h3>
+        <p>
+            To reach the top of the leaderboard, players must master the "short hop" vs. "long jump" timing. While the jump height is fixed, initiating a jump too early will cause you to land <em>on</em> the obstacle, triggering a game over. Initiating too late leads to a collision.
+        </p>
+        <p>
+            <strong>Pro Tip:</strong> Focus your eyes on the right side of the screen rather than your character. Reacting to obstacles as they spawn gives you a split-second advantage compared to watching them arrive at the player's position.
+        </p>
+
+        <hr style="border-color: #333; margin: 30px 0;">
+        
+        <p style="font-size: 12px; text-align: center; color: #666;">
+            <em>Technical Specs: Built with Vanilla JavaScript and HTML5 Canvas. Powered by Google Firebase for real-time data persistence.</em>
         </p>
     </div>
 
@@ -417,71 +451,4 @@
             const distX = Math.abs(player.x - obstacle.x - obstacle.w / 2);
             const distY = Math.abs(player.y - obstacle.y - obstacle.h / 2);
             if (distX > (obstacle.w / 2 + player.radius)) return false;
-            if (distY > (obstacle.h / 2 + player.radius)) return false;
-            if (distX <= (obstacle.w / 2)) return true;
-            if (distY <= (obstacle.h / 2)) return true;
-            const dx = distX - obstacle.w / 2;
-            const dy = distY - obstacle.h / 2;
-            return (dx * dx + dy * dy <= (player.radius * player.radius));
-        }
-
-        function drawText() {
-            ctx.fillStyle = 'white'; 
-            ctx.textAlign = 'left';
-            // Safe Font String: Weight Size Family, Fallback
-            ctx.font = 'bold 20px "Outfit", sans-serif';
-            
-            ctx.fillText(`${currentPlayerName}`, 20, 30);
-            ctx.fillText(`Score: ${score}`, 20, 60);
-            ctx.fillText(`High: ${highScore}`, 20, 85);
-
-            if (isGameOver) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; 
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                ctx.fillStyle = '#FF0000'; 
-                ctx.textAlign = 'center';
-                ctx.font = '900 40px "Outfit", sans-serif'; 
-                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
-                
-                ctx.fillStyle = 'white'; 
-                ctx.font = 'bold 20px "Outfit", sans-serif'; 
-                ctx.fillText('Tap to Restart', canvas.width / 2, canvas.height / 2 + 20);
-            }
-        }
-
-        function resetGame() {
-            isGameOver = false; score = 0; gameSpeed = 5; obstacles = []; frames = 0;
-            player.y = 150; player.dy = 0; 
-            animate();
-        }
-
-        function animate() {
-            if (!isGameRunning || isGameOver) return;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            player.update(); spawnObstacles();
-
-            for (let i = 0; i < obstacles.length; i++) {
-                obstacles[i].update();
-                if (checkCollision(player, obstacles[i])) {
-                    isGameOver = true;
-                    if (score > highScore) {
-                        highScore = score;
-                        try { localStorage.setItem('jumperHighScore', highScore); } catch(e){}
-                    }
-                    submitScoreToGlobal(currentPlayerName, score);
-                    drawText(); return;
-                }
-            }
-            obstacles = obstacles.filter(obs => !obs.markedForDeletion);
-            drawText(); frames++;
-            if (frames % 500 === 0) gameSpeed += 0.5;
-            requestAnimationFrame(animate);
-        }
-        
-        resizeCanvas();
-
-    </script>
-</body>
-</html>
+            i
