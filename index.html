@@ -206,6 +206,7 @@
         let isGameRunning = false;
         let obstacles = [];
         let currentPlayerName = "ANON";
+        let nextSpawnFrame = 0; // NEW: Controls spawn timing accurately
 
         // --- MENU LOGIC ---
         const savedName = localStorage.getItem('neonJumperName');
@@ -217,7 +218,6 @@
         }
 
         function startGame() {
-            console.log("Starting Game...");
             const nameVal = nameInput.value.trim();
             currentPlayerName = nameVal || "ANON";
             localStorage.setItem('neonJumperName', currentPlayerName);
@@ -345,9 +345,21 @@
         touchLayer.addEventListener('touchstart', (e) => { e.preventDefault(); if(isGameRunning) handleInput(e); });
         touchLayer.addEventListener('mousedown', (e) => { if(isGameRunning) handleInput(e); });
 
+        // --- NEW SPAWN LOGIC ---
         function spawnObstacles() {
-            let spawnRate = Math.max(60, 150 - gameSpeed * 5);
-            if (frames % Math.floor(spawnRate) === 0) obstacles.push(new Obstacle());
+            // Only spawn if we passed the "Next Spawn Frame"
+            if (frames >= nextSpawnFrame) {
+                obstacles.push(new Obstacle());
+                
+                // Calculate next spawn:
+                // Jump takes ~40 frames. We need at least 45 frames gap to be safe.
+                // We add random variance (0 to 60 frames) to keep it interesting.
+                // As speed increases, we effectively cover more distance in these frames.
+                let minGap = 45; 
+                let randomGap = Math.random() * 60; 
+                
+                nextSpawnFrame = frames + minGap + randomGap;
+            }
         }
 
         function checkCollision(player, obstacle) {
@@ -365,6 +377,7 @@
             ctx.fillText(`${currentPlayerName}`, 20, 30);
             ctx.fillText(`Score: ${score}`, 20, 60);
             ctx.fillText(`High: ${highScore}`, 20, 85);
+            ctx.fillText(`Speed: ${Math.floor(gameSpeed)}`, 20, 110); // Debug info
 
             if (isGameOver) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -377,13 +390,17 @@
 
         function resetGame() {
             isGameOver = false; score = 0; gameSpeed = 5; obstacles = []; frames = 0;
-            player.y = 150; player.dy = 0; animate();
+            nextSpawnFrame = 0; // Reset spawn timer
+            player.y = 150; player.dy = 0; 
+            animate();
         }
 
         function animate() {
             if (!isGameRunning || isGameOver) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            player.update(); spawnObstacles();
+            player.update(); 
+            spawnObstacles();
+            
             obstacles.forEach(obs => {
                 obs.update();
                 if (checkCollision(player, obs)) {
@@ -395,8 +412,14 @@
             });
             if(isGameOver) return;
             obstacles = obstacles.filter(obs => !obs.markedForDeletion);
-            drawText(); frames++;
-            if (frames % 500 === 0) gameSpeed += 0.5;
+            drawText(); 
+            
+            frames++;
+            // INCREASE SPEED BUT CAP IT AT 15
+            if (frames % 500 === 0 && gameSpeed < 15) {
+                gameSpeed += 0.5;
+            }
+            
             requestAnimationFrame(animate);
         }
         
