@@ -426,8 +426,13 @@
         const obstacleColors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#FFA500', '#9400D3', '#FF1493'];
 
         const player = {
-            x: 50, y: 150, radius: 25, 
-            dy: 0, jumpForce: 12, gravity: 0.6, grounded: false,
+            x: 50, 
+            y: 150, 
+            radius: 35, // CHANGED: Increased from 25 to 35
+            dy: 0, 
+            jumpForce: 12, 
+            gravity: 0.6, 
+            grounded: false,
             draw: function() {
                 if (imageLoaded) {
                     const aspect = playerImage.width / playerImage.height;
