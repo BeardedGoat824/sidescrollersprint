@@ -101,29 +101,29 @@
             max-width: 800px;
         }
 
-        /* --- UPDATED INSTRUCTIONS (JUMP BUTTON) --- */
+        /* --- UPDATED INSTRUCTIONS (FULL WIDTH BUTTON) --- */
         #instructions { 
-            margin-top: 0;       /* Removes gap so button touches the white line */
-            padding: 0;          /* Removes internal padding */
+            margin-top: 0;       
+            padding: 0;          
             text-align: center; 
-            pointer-events: auto; /* Enable Tapping */
-            cursor: pointer;      /* Show it is clickable */
+            pointer-events: auto; 
+            cursor: pointer;      
             user-select: none;
             -webkit-user-select: none;
+            width: 100%;          /* Ensure container spans full width */
+            max-width: 800px;     /* Keep alignment with canvas */
         }
         
         #jump-btn-img {
             display: block;
-            margin: 0 auto;      /* Centers the button */
-            width: 200px;        /* Sets a good size for mobile/desktop */
-            max-width: 90%;      /* Prevents overflow on small screens */
-            height: auto;
+            margin: 0 auto;
+            width: 100%;         /* Forces image to fill the container width */
+            height: auto;        /* Maintains aspect ratio (will be much taller now) */
             transition: transform 0.1s;
         }
 
-        /* Visual feedback when pressed */
         #instructions:active #jump-btn-img {
-            transform: scale(0.95);
+            transform: scale(0.98); /* Slight press effect */
         }
         
         /* PAUSE BUTTON */
@@ -197,7 +197,7 @@
             cursor: pointer;
         }
 
-        /* --- ABOUT MODAL (RED CIRCLE FIX) --- */
+        /* --- ABOUT MODAL --- */
         #about-modal {
             display: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
