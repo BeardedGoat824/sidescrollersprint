@@ -101,20 +101,29 @@
             max-width: 800px;
         }
 
-        /* --- INSTRUCTIONS (BLUE CIRCLE FIX) --- */
+        /* --- UPDATED INSTRUCTIONS (JUMP BUTTON) --- */
         #instructions { 
-            margin-top: 20px; 
-            color: #888; 
-            font-size: 14px; 
+            margin-top: 0;       /* Removes gap so button touches the white line */
+            padding: 0;          /* Removes internal padding */
             text-align: center; 
             pointer-events: auto; /* Enable Tapping */
             cursor: pointer;      /* Show it is clickable */
-            padding: 20px;        /* Increase Hitbox */
-            border-radius: 10px;
+            user-select: none;
+            -webkit-user-select: none;
         }
-        #instructions:active {
-            color: white;
-            background-color: rgba(255,255,255,0.1);
+        
+        #jump-btn-img {
+            display: block;
+            margin: 0 auto;      /* Centers the button */
+            width: 200px;        /* Sets a good size for mobile/desktop */
+            max-width: 90%;      /* Prevents overflow on small screens */
+            height: auto;
+            transition: transform 0.1s;
+        }
+
+        /* Visual feedback when pressed */
+        #instructions:active #jump-btn-img {
+            transform: scale(0.95);
         }
         
         /* PAUSE BUTTON */
@@ -249,7 +258,9 @@
 
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
-        <div id="instructions">Press SPACE or TAP HERE to jump</div>
+        <div id="instructions">
+            <img src="button_jump.png" alt="JUMP" id="jump-btn-img">
+        </div>
     </div>
 
     <div style="margin-top: 20px; width: 100%; text-align: center; min-height: 90px; z-index: 10;">
@@ -604,6 +615,9 @@
             FB.fetchPersonalBest();
             resetGame();
         };
+
+        // --- PAUSE BUTTON FIX APPLIED HERE ---
+        dom.pauseBtn.onclick = togglePause;
 
         function togglePause() {
             if (!state.isRunning || state.isGameOver) return;
