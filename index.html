@@ -348,6 +348,7 @@
         const assets = {
             player: new Image(),
             gameOverSound: new Audio('Gameover.mp3'),
+            jumpSound: new Audio('jump.mp3'), // ADDED: Jump sound asset
             loaded: false
         };
         assets.player.src = 'trump.png';
@@ -473,6 +474,8 @@
                 if (this.grounded) {
                     this.dy = -CONFIG.JUMP_FORCE;
                     this.grounded = false;
+                    assets.jumpSound.currentTime = 0; // Ensures sound plays even if rapidly re-triggered
+                    assets.jumpSound.play().catch(()=>{}); // ADDED: Play jump sound
                 }
             }
         };
