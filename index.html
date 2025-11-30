@@ -611,6 +611,11 @@
         dom.startBtn.onclick = () => {
             state.name = dom.nameInput.value.trim().toUpperCase() || "ANON";
             localStorage.setItem('neonJumperName', state.name);
+            
+            // --- FIX: Attempt to play/pause sound to bypass browser autoplay policy ---
+            assets.jumpSound.play().then(() => assets.jumpSound.pause()).catch(()=>{}); 
+            // --------------------------------------------------------------------------
+
             dom.startScreen.style.display = 'none';
             dom.gameContainer.style.display = 'flex';
             dom.pauseBtn.style.display = 'block';
