@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Side Scroller Sprint</title>
+    <title>Side Scroller Sprint: Neon Edition</title>
     <meta name="application-name" content="Side Scroller Sprint">
     <meta name="apple-mobile-web-app-title" content="Side Scroller Sprint">
     
@@ -19,16 +19,25 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7055039904830703" crossorigin="anonymous"></script>
 
     <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-purple: #bc13fe;
+            --grid-color: rgba(188, 19, 254, 0.3);
+            --bg-color: #050011;
+        }
+
         html, body {
             margin: 0; padding: 0; 
             width: 100%; height: 100%; min-height: 100vh;
-            background-color: black; color: white;
-            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color); 
+            color: white;
+            font-family: 'Orbitron', 'Outfit', sans-serif; /* Changed to sci-fi font */
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
             overflow-x: hidden; 
             user-select: none;
@@ -36,47 +45,80 @@
             touch-action: manipulation;
         }
 
+        /* --- CRT SCANLINE EFFECT --- */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 999;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
         /* --- START SCREEN STYLES --- */
         #start-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: black; z-index: 100;
+            background: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
+            z-index: 100;
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
         }
 
+        /* GLITCH TITLE EFFECT */
         h1.title {
             color: #ffffff; 
-            text-shadow: 
-                0 0 5px #ffffff,
-                0 0 15px #0055ff,
-                0 0 30px #ff0000,
-                0 0 40px #ff0000;
-            font-size: 40px; margin-bottom: 10px; letter-spacing: 2px;
+            font-size: 45px; margin-bottom: 20px; letter-spacing: 4px;
             text-align: center;
             font-weight: 900;
             text-transform: uppercase;
+            position: relative;
+            text-shadow: 2px 2px 0px var(--neon-pink), -2px -2px 0px var(--neon-blue);
+            animation: glitch 1s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(-2deg); }
+            40% { transform: skew(2deg); }
+            60% { transform: skew(-1deg); }
+            80% { transform: skew(1deg); }
+            100% { transform: skew(0deg); }
         }
 
         #player-name-input {
-            background-color: #111; color: #00FF00; border: 2px solid #333;
-            font-family: 'Outfit', sans-serif;
+            background-color: rgba(0, 0, 0, 0.5); 
+            color: var(--neon-blue); 
+            border: 2px solid var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
             font-weight: 700;
-            font-size: 24px; text-align: center; padding: 10px;
+            font-size: 24px; text-align: center; padding: 15px;
             margin: 20px 0; outline: none; text-transform: uppercase;
             width: 250px; border-radius: 5px;
+            box-shadow: 0 0 10px var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
         }
-        #player-name-input::placeholder { color: #444; }
-        #player-name-input:focus { border-color: #00FF00; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
+        #player-name-input::placeholder { color: rgba(0, 243, 255, 0.3); }
 
         #start-btn {
-            background-color: #00FF00; color: black; border: none;
-            padding: 15px 40px; font-size: 20px; font-weight: 900;
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer; border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0,255,0,0.5);
+            background-color: transparent; 
+            color: var(--neon-pink); 
+            border: 2px solid var(--neon-pink);
+            padding: 15px 50px; font-size: 22px; font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer; 
+            box-shadow: 0 0 15px var(--neon-pink), inset 0 0 10px var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
             transition: all 0.2s;
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
         }
-        #start-btn:hover { background-color: white; box-shadow: 0 0 25px white; transform: scale(1.05); }
+        #start-btn:hover { 
+            background-color: var(--neon-pink); 
+            color: black; 
+            box-shadow: 0 0 30px var(--neon-pink); 
+            transform: scale(1.05); 
+        }
 
         /* --- GAME UI --- */
         #game-container { 
@@ -91,77 +133,88 @@
             pointer-events: none; 
         }
         
-        canvas { pointer-events: auto; }
-
         canvas { 
-            border-bottom: 2px solid white; 
-            background-color: black; 
+            pointer-events: auto; 
+            border-bottom: 4px solid var(--neon-purple); 
+            background-color: transparent; /* Transparent so we can see CSS background if needed, but we draw bg in canvas */
             display: block; 
             width: 100%;
             max-width: 800px;
+            box-shadow: 0 0 20px var(--neon-purple);
         }
 
-        /* --- UPDATED INSTRUCTIONS (FULL WIDTH BUTTON) --- */
+        /* --- INSTRUCTIONS --- */
         #instructions { 
-            margin-top: 0;       
+            margin-top: 10px;       
             padding: 0;          
             text-align: center; 
             pointer-events: auto; 
             cursor: pointer;      
             user-select: none;
             -webkit-user-select: none;
-            width: 100%;          /* Ensure container spans full width */
-            max-width: 800px;     /* Keep alignment with canvas */
+            width: 100%;          
+            max-width: 800px;
         }
         
         #jump-btn-img {
             display: block;
             margin: 0 auto;
-            width: 100%;         /* Forces image to fill the container width */
-            height: auto;        /* Maintains aspect ratio (will be much taller now) */
-            transition: transform 0.1s;
+            width: 100%;         
+            height: auto;
+            filter: drop-shadow(0 0 5px var(--neon-blue)); /* Add glow to the image */
+            transition: transform 0.1s, filter 0.1s;
         }
 
         #instructions:active #jump-btn-img {
-            transform: scale(0.98); /* Slight press effect */
+            transform: scale(0.98);
+            filter: drop-shadow(0 0 2px var(--neon-blue));
         }
         
-        /* PAUSE BUTTON */
+        /* PAUSE BUTTON - REPOSITIONED */
         #pause-btn {
-            position: fixed; 
-            top: 20px;
-            right: 20px; 
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: 2px solid white;
-            border-radius: 5px;
-            padding: 10px 15px;
+            position: absolute; 
+            top: 0;
+            left: 0; 
+            background: rgba(0, 0, 0, 0.8);
+            color: var(--neon-blue);
+            border: none;
+            border-right: 1px solid var(--neon-purple);
+            border-bottom: 1px solid var(--neon-purple);
+            border-top-left-radius: 8px; /* Match container */
+            border-bottom-right-radius: 8px;
+            padding: 8px 12px;
             font-weight: 900;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Orbitron', sans-serif;
             cursor: pointer;
-            z-index: 200; 
-            font-size: 16px;
-            touch-action: manipulation;
+            z-index: 40; 
+            font-size: 14px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: all 0.2s;
         }
-        #pause-btn:hover { background: white; color: black; }
+        #pause-btn:hover { background: var(--neon-blue); color: black; }
 
         /* LEADERBOARD STYLES */
         #leaderboard-container {
             position: absolute; top: 20px; left: 20px; 
-            width: 200px;
-            background-color: rgba(0, 0, 0, 0.9); border: 1px solid #333;
-            padding: 10px; z-index: 30; font-size: 12px;
+            width: 220px;
+            background-color: rgba(10, 5, 20, 0.9); 
+            border: 1px solid var(--neon-purple);
+            padding: 15px; z-index: 30; font-size: 12px;
+            box-shadow: 0 0 15px rgba(188, 19, 254, 0.3);
+            border-radius: 8px;
+            /* Padding top adjusted to accommodate button overlap if needed, though button is absolute */
         }
         #leaderboard-container h3 {
-            margin: 0 0 10px 0; text-align: center; border-bottom: 1px solid #555;
-            padding-bottom: 5px; font-size: 14px; color: #00FFFF;
-            font-weight: 700;
+            margin: 0 0 10px 0; text-align: center; 
+            border-bottom: 1px solid var(--neon-purple);
+            padding-bottom: 5px; font-size: 16px; color: var(--neon-blue);
+            font-weight: 700; text-shadow: 0 0 5px var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
         }
-        #lb-list { list-style: none; padding: 0; margin: 0; }
-        #lb-list li { display: flex; justify-content: space-between; margin-bottom: 4px; }
-        #lb-list li span.lb-score { color: #FF00FF; font-weight: 700; }
+        #lb-list { list-style: none; padding: 0; margin: 0; font-family: 'Orbitron', sans-serif;}
+        #lb-list li { display: flex; justify-content: space-between; margin-bottom: 6px; color: #ccc; }
+        #lb-list li span.lb-score { color: var(--neon-pink); font-weight: 700; text-shadow: 0 0 5px var(--neon-pink);}
         .loading-text { text-align: center; color: #555; }
-        .error-text { text-align: center; color: #ff4444; font-size: 10px; }
 
         /* --- FOOTER MESSAGE STYLES --- */
         @keyframes pulseYellow {
@@ -174,11 +227,11 @@
             width: 100%;
             text-align: center;
             color: #FFFF00; 
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Orbitron', sans-serif;
             font-size: 12px;
             font-weight: 700;
             padding: 20px 10px;
-            background-color: #000; 
+            background-color: #050011; 
             text-shadow: 0 0 8px #FFFF00; 
             z-index: 200; 
             box-sizing: border-box;
@@ -204,24 +257,31 @@
             background-color: rgba(0,0,0,0.9);
             z-index: 300;
             align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
         }
         .modal-content {
-            background: #111; border: 2px solid #00FF00;
-            padding: 20px; max-width: 90%; width: 400px;
+            background: #111; 
+            border: 2px solid var(--neon-blue);
+            padding: 25px; max-width: 90%; width: 400px;
             text-align: center; border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,255,0,0.3);
+            box-shadow: 0 0 30px var(--neon-blue);
         }
-        .modal-content h2 { color: #00FF00; margin-top: 0; }
+        .modal-content h2 { color: var(--neon-blue); margin-top: 0; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--neon-blue); }
         .modal-content p { color: #ccc; font-size: 14px; line-height: 1.6; }
         #close-about-btn {
             background: #333; color: white; border: 1px solid white;
             padding: 10px 20px; margin-top: 20px; cursor: pointer;
-            font-family: 'Outfit', sans-serif; font-weight: bold;
+            font-family: 'Orbitron', sans-serif; font-weight: bold;
+            transition: 0.2s;
         }
+        #close-about-btn:hover { background: white; color: black; }
 
         @media (max-width: 600px) {
-            #game-container { margin-top: 180px !important; }
+            #game-container { margin-top: 10px !important; }
             h1.title { font-size: 32px; }
+            #leaderboard-container {
+                position: relative; top: 0; left: 0; width: 90%; margin: 0 auto 5px auto;
+            }
         }
     </style>
 </head>
@@ -229,15 +289,16 @@
 
     <div id="start-screen">
         <h1 class="title">SIDE SCROLLER SPRINT</h1>
-        <input type="text" id="player-name-input" placeholder="ENTER NAME" maxlength="12" autocomplete="off">
-        <button id="start-btn">INITIALIZE</button>
-        <div style="margin-top: 20px; color: #555; font-size: 12px; font-weight: 700;">TOP SCORE: <span id="menu-high-score">0</span></div>
+        <div style="font-family: 'Orbitron'; color: var(--neon-pink); font-size: 12px; letter-spacing: 2px; margin-bottom: 20px;">NEON EDITION</div>
+        <input type="text" id="player-name-input" placeholder="ENTER CODENAME" maxlength="12" autocomplete="off">
+        <button id="start-btn">INITIALIZE RUN</button>
+        <div style="margin-top: 30px; color: #aaa; font-size: 14px; font-weight: 700; font-family: 'Orbitron';">TOP SCORE: <span id="menu-high-score" style="color: var(--neon-blue)">0</span></div>
         <div id="firebase-status" style="margin-top: 10px; font-size: 10px; color: #888;"></div>
     </div>
 
     <div id="about-modal">
         <div class="modal-content">
-            <h2>About Side Scroller Sprint</h2>
+            <h2>SYSTEM INFO</h2>
             <p>
                 Side Scroller Sprint is a fast-paced HTML5 endless runner game. 
                 Test your reflexes by jumping over obstacles in a neon-styled world. 
@@ -247,19 +308,21 @@
         </div>
     </div>
 
+    <!-- MOVED PAUSE BUTTON INSIDE CONTAINER -->
     <div id="leaderboard-container">
+        <button id="pause-btn" style="display:none;">II</button>
         <h3>GLOBAL TOP 5</h3>
         <ul id="lb-list">
-            <li class="loading-text">Loading...</li>
+            <li class="loading-text">Loading Data...</li>
         </ul>
     </div>
 
-    <button id="pause-btn" style="display:none;">II</button>
+    <!-- PAUSE BTN WAS HERE -->
 
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
         <div id="instructions">
-            <img src="button_jump.png" alt="JUMP" id="jump-btn-img">
+            <img src="button_jump.png" alt="TAP TO JUMP" id="jump-btn-img">
         </div>
     </div>
 
@@ -289,14 +352,14 @@
 
         // --- CONFIGURATION & CONSTANTS ---
         const CONFIG = {
-            GRAVITY: 1500,        // Pixels per second squared
-            JUMP_FORCE: 600,      // Pixels per second
-            START_SPEED: 300,     // Pixels per second
-            MAX_SPEED: 900,
-            SPEED_INC: 10,        // Speed increase per second
-            SPAWN_MIN: 1.2,       // Min seconds between spawns
-            SPAWN_MAX: 2.5,       // Max seconds between spawns
-            MIN_GAP: 250          // Min pixel gap between obstacles
+            GRAVITY: 1500,        
+            JUMP_FORCE: 600,      
+            START_SPEED: 350,     
+            MAX_SPEED: 1000,
+            SPEED_INC: 15,        
+            SPAWN_MIN: 1.0,       
+            SPAWN_MAX: 2.2,       
+            MIN_GAP: 250          
         };
 
         const firebaseConfig = {
@@ -322,7 +385,8 @@
             nextSpawnTime: 0,
             name: "ANON",
             db: null,
-            firebaseReady: false
+            firebaseReady: false,
+            bgOffset: 0 // For parallax background
         };
 
         // --- DOM ELEMENTS ---
@@ -348,11 +412,45 @@
         const assets = {
             player: new Image(),
             gameOverSound: new Audio('Gameover.mp3'),
-            jumpSound: new Audio('jump.mp3'), // ADDED: Jump sound asset
+            jumpSound: new Audio('jump.mp3'), 
             loaded: false
         };
         assets.player.src = 'trump.png';
         assets.player.onload = () => assets.loaded = true;
+
+        // --- PARTICLE SYSTEM (New Fancy Stuff) ---
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = Math.random() * 2 - 1 - (state.gameSpeed * 0.005); // Move left with world
+                this.speedY = Math.random() * 2 - 1;
+                this.color = color;
+                this.life = 1.0; // 100% opacity start
+                this.decay = Math.random() * 0.03 + 0.01;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+            }
+            draw(ctx) {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+        let particles = [];
+
+        function spawnParticles(x, y, count, color) {
+            for(let i=0; i<count; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
 
         // --- MODAL LOGIC ---
         dom.openAboutBtn.onclick = (e) => {
@@ -363,19 +461,19 @@
             dom.aboutModal.style.display = 'none';
         };
 
-        // --- FIREBASE SYSTEM ---
+        // --- FIREBASE SYSTEM (UNCHANGED) ---
         const FB = {
             init: (retries = 3) => {
                 try {
                     const app = initializeApp(firebaseConfig);
                     state.db = getDatabase(app);
                     state.firebaseReady = true;
-                    dom.firebaseStatus.innerHTML = '<span style="color:#00FF00">✓ Online</span>';
+                    dom.firebaseStatus.innerHTML = '<span style="color:#00f3ff">✓ SYSTEM ONLINE</span>';
                     FB.listenLeaderboard();
                     FB.fetchPersonalBest();
                 } catch (e) {
                     if (retries > 0) setTimeout(() => FB.init(retries - 1), 1000);
-                    else dom.firebaseStatus.innerHTML = '<span style="color:#FF4444">✗ Offline</span>';
+                    else dom.firebaseStatus.innerHTML = '<span style="color:#FF4444">✗ SYSTEM OFFLINE</span>';
                 }
             },
             sanitize: (key) => key.replace(/[.#$[\]\/]/g, "").substring(0, 50),
@@ -424,21 +522,35 @@
         class Obstacle {
             constructor() { this.reset(); }
             reset() {
-                this.w = 20 + Math.random() * 30;
-                this.h = 30 + Math.random() * 50;
+                this.w = 30 + Math.random() * 20;
+                this.h = 40 + Math.random() * 40;
                 this.x = dom.canvas.width / window.devicePixelRatio; 
                 this.y = (dom.canvas.height / window.devicePixelRatio) - this.h;
-                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                // Fancy neon colors for obstacles
+                const colors = ['#ff00ff', '#00f3ff', '#bc13fe', '#ffe600'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
                 this.markedForDeletion = false;
                 this.passed = false;
+                this.pulse = 0;
             }
             update(dt) {
                 this.x -= state.gameSpeed * dt;
+                this.pulse += dt * 10;
                 if (this.x + this.w < 0) this.markedForDeletion = true;
             }
             draw(ctx) {
+                // Neon Glow Effect
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
                 ctx.fillStyle = this.color;
+                
+                // Draw fancy block
                 ctx.fillRect(this.x, this.y, this.w, this.h);
+                
+                // Inner highlight
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = "rgba(255,255,255,0.5)";
+                ctx.fillRect(this.x, this.y, 5, this.h);
             }
         }
 
@@ -447,24 +559,41 @@
 
         // --- PLAYER ENTITY ---
         const player = {
-            x: 50, y: 150, radius: 35, dy: 0, grounded: false,
+            x: 80, y: 150, radius: 35, dy: 0, grounded: false,
+            trailTimer: 0,
             draw: function(ctx) {
+                // Draw Shadow/Glow
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00f3ff';
+
                 if (assets.loaded) {
                     const size = this.radius * 2;
                     ctx.drawImage(assets.player, this.x - this.radius, this.y - this.radius, size, size);
                 } else {
                     ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = 'white'; ctx.fill();
+                    ctx.fillStyle = '#00f3ff'; ctx.fill();
                 }
+                ctx.shadowBlur = 0;
             },
             update: function(dt) {
                 this.dy += CONFIG.GRAVITY * dt;
                 this.y += this.dy * dt;
                 
+                // Trail Effect
+                this.trailTimer += dt;
+                if (this.trailTimer > 0.05) {
+                    spawnParticles(this.x - 10, this.y + 10, 1, '#00f3ff');
+                    this.trailTimer = 0;
+                }
+                
                 const floor = (dom.canvas.height / window.devicePixelRatio) - this.radius;
                 if (this.y > floor) {
                     this.y = floor;
                     this.dy = 0;
+                    if (!this.grounded) {
+                        // Landed effect
+                        spawnParticles(this.x, this.y + this.radius, 5, '#ffffff');
+                    }
                     this.grounded = true;
                 } else {
                     this.grounded = false;
@@ -474,17 +603,73 @@
                 if (this.grounded) {
                     this.dy = -CONFIG.JUMP_FORCE;
                     this.grounded = false;
-                    assets.jumpSound.currentTime = 0; // Ensures sound plays even if rapidly re-triggered
-                    assets.jumpSound.play().catch(()=>{}); // ADDED: Play jump sound
+                    assets.jumpSound.currentTime = 0; 
+                    assets.jumpSound.play().catch(()=>{});
+                    // Jump particles
+                    spawnParticles(this.x, this.y + this.radius, 8, '#00f3ff');
                 }
             }
         };
+
+        // --- BACKGROUND RENDERER ---
+        function drawBackground(ctx, width, height) {
+            // Retro Sun
+            const sunY = height * 0.4;
+            const sunX = width * 0.7;
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, "#050011");
+            gradient.addColorStop(1, "#2a003b");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0,0,width,height);
+
+            // Draw Sun
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = "#ff0080";
+            ctx.fillStyle = "#ff0080";
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 60, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Draw Sun Stripes (scanlines over sun)
+            ctx.fillStyle = "#2a003b"; // Match bottom bg
+            for(let i=0; i<10; i++) {
+                ctx.fillRect(sunX - 65, sunY - 20 + (i*8), 130, 3);
+            }
+
+            // Draw Grid (Perspective)
+            ctx.strokeStyle = "rgba(188, 19, 254, 0.4)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            // Vertical Lines moving left
+            const horizonY = height * 0.6;
+            const speedMultiplier = 0.5;
+            const offset = (state.bgOffset * speedMultiplier) % 100;
+            
+            // Horizontal lines (perspective)
+            for (let i = 0; i < 10; i++) {
+                const y = horizonY + (i * i * 3) + 10; // Quadratic spacing for depth
+                if (y > height) break;
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+            }
+
+            // Vertical fan lines
+            for (let i = -10; i < 20; i++) {
+                // Slanted lines originating from center-ish
+                const x = (i * 100) - offset;
+                ctx.moveTo(x + (width/2), horizonY);
+                ctx.lineTo(x * 4, height); // Spread out at bottom
+            }
+            ctx.stroke();
+        }
 
         // --- CORE SYSTEMS ---
         function resize() {
             const dpr = window.devicePixelRatio || 1;
             const width = Math.min(window.innerWidth - 20, 800);
-            const height = 300;
+            const height = 350; // Taller for better background view
             dom.canvas.width = width * dpr;
             dom.canvas.height = height * dpr;
             dom.canvas.style.width = `${width}px`;
@@ -493,15 +678,19 @@
         }
 
         function checkCollision(p, o) {
+            // Simplified hit box for fairness
+            const hitPadding = 10; 
             const distX = Math.abs(p.x - o.x - o.w / 2);
             const distY = Math.abs(p.y - o.y - o.h / 2);
-            if (distX > (o.w / 2 + p.radius)) return false;
-            if (distY > (o.h / 2 + p.radius)) return false;
+            
+            if (distX > (o.w / 2 + p.radius - hitPadding)) return false;
+            if (distY > (o.h / 2 + p.radius - hitPadding)) return false;
             if (distX <= (o.w / 2)) return true; 
             if (distY <= (o.h / 2)) return true;
+            
             const dx = distX - o.w / 2;
             const dy = distY - o.h / 2;
-            return (dx * dx + dy * dy <= (p.radius * p.radius));
+            return (dx * dx + dy * dy <= ((p.radius - hitPadding) * (p.radius - hitPadding)));
         }
 
         function resetGame() {
@@ -511,6 +700,7 @@
             state.spawnTimer = 0;
             activeObstacles.forEach(o => obstaclePool.return(o));
             activeObstacles = [];
+            particles = [];
             player.y = 150; player.dy = 0;
             state.lastTime = performance.now();
             requestAnimationFrame(loop);
@@ -522,16 +712,21 @@
 
             const dt = (timestamp - state.lastTime) / 1000;
             state.lastTime = timestamp;
+            state.bgOffset += state.gameSpeed * dt;
 
-            dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+            // Draw Background First
+            const w = dom.canvas.width / window.devicePixelRatio;
+            const h = dom.canvas.height / window.devicePixelRatio;
+            drawBackground(dom.ctx, w, h);
 
             player.update(dt);
             if (state.gameSpeed < CONFIG.MAX_SPEED) state.gameSpeed += CONFIG.SPEED_INC * dt;
 
+            // Spawn Logic
             state.spawnTimer += dt;
             if (state.spawnTimer >= state.nextSpawnTime) {
                 const lastObs = activeObstacles[activeObstacles.length - 1];
-                const safeGap = !lastObs || ((dom.canvas.width/window.devicePixelRatio) - (lastObs.x + lastObs.w) > CONFIG.MIN_GAP);
+                const safeGap = !lastObs || (w - (lastObs.x + lastObs.w) > CONFIG.MIN_GAP);
                 if (safeGap) {
                     const obs = obstaclePool.get();
                     obs.reset();
@@ -541,13 +736,27 @@
                 }
             }
 
+            // Update Obstacles
             for (let i = activeObstacles.length - 1; i >= 0; i--) {
                 let obs = activeObstacles[i];
                 obs.update(dt);
                 obs.draw(dom.ctx);
                 if (checkCollision(player, obs)) { gameOver(); return; }
-                if (!obs.passed && obs.x + obs.w < player.x - player.radius) { state.score++; obs.passed = true; }
+                if (!obs.passed && obs.x + obs.w < player.x - player.radius) { 
+                    state.score++; 
+                    obs.passed = true;
+                    // Score particle
+                    spawnParticles(player.x, player.y - 40, 5, '#ffff00');
+                }
                 if (obs.markedForDeletion) { obstaclePool.return(obs); activeObstacles.splice(i, 1); }
+            }
+
+            // Update Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.update();
+                p.draw(dom.ctx);
+                if (p.life <= 0) particles.splice(i, 1);
             }
 
             player.draw(dom.ctx);
@@ -556,12 +765,21 @@
         }
 
         function drawUI() {
-            dom.ctx.fillStyle = 'white';
-            dom.ctx.font = 'bold 20px "Outfit", sans-serif';
+            dom.ctx.fillStyle = '#00f3ff';
+            dom.ctx.shadowBlur = 5;
+            dom.ctx.shadowColor = '#00f3ff';
+            dom.ctx.font = 'bold 24px "Orbitron", sans-serif';
             dom.ctx.textAlign = 'left';
-            dom.ctx.fillText(`${state.name}`, 20, 30);
-            dom.ctx.fillText(`Score: ${state.score}`, 20, 60);
-            dom.ctx.fillText(`High: ${state.highScore}`, 20, 85);
+            dom.ctx.fillText(`${state.name}`, 20, 35);
+            
+            dom.ctx.fillStyle = '#ff00ff';
+            dom.ctx.shadowColor = '#ff00ff';
+            dom.ctx.fillText(`SCORE: ${state.score}`, 20, 70);
+            
+            dom.ctx.fillStyle = '#ffffff';
+            dom.ctx.shadowBlur = 0;
+            dom.ctx.font = '16px "Orbitron", sans-serif';
+            dom.ctx.fillText(`HIGH: ${state.highScore}`, 20, 95);
         }
 
         function gameOver() {
@@ -573,21 +791,26 @@
             }
             FB.submit(state.score);
             
-            dom.ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            // Game Over overlay
+            dom.ctx.fillStyle = 'rgba(0,0,0,0.85)';
             dom.ctx.fillRect(0, 0, dom.canvas.width / window.devicePixelRatio, dom.canvas.height / window.devicePixelRatio);
+            
+            dom.ctx.shadowBlur = 20;
+            dom.ctx.shadowColor = '#FF0000';
             dom.ctx.fillStyle = '#FF0000';
             dom.ctx.textAlign = 'center';
-            dom.ctx.font = '900 40px "Outfit"';
-            dom.ctx.fillText('GAME OVER', (dom.canvas.width / window.devicePixelRatio)/2, 130);
+            dom.ctx.font = '900 40px "Orbitron"';
+            dom.ctx.fillText('SYSTEM FAILURE', (dom.canvas.width / window.devicePixelRatio)/2, 130);
+            
+            dom.ctx.shadowBlur = 0;
             dom.ctx.fillStyle = 'white';
-            dom.ctx.font = 'bold 20px "Outfit"';
-            dom.ctx.fillText('Tap to Restart', (dom.canvas.width / window.devicePixelRatio)/2, 170);
+            dom.ctx.font = 'bold 20px "Orbitron"';
+            dom.ctx.fillText('TAP TO REBOOT', (dom.canvas.width / window.devicePixelRatio)/2, 170);
         }
 
         // --- INPUT HANDLING ---
         function handleInput(e) {
             if (!state.isRunning) return;
-            // Allow tap on specific ID, otherwise block buttons
             if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
             
             if (state.isGameOver) resetGame();
@@ -599,7 +822,6 @@
             else if (e.code === 'Space' || e.code === 'ArrowUp') handleInput(e);
         });
         
-        // Specific listener for the Blue Circle area
         dom.instructions.addEventListener('mousedown', handleInput);
         dom.instructions.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
 
@@ -612,9 +834,7 @@
             state.name = dom.nameInput.value.trim().toUpperCase() || "ANON";
             localStorage.setItem('neonJumperName', state.name);
             
-            // --- FIX: Attempt to play/pause sound to bypass browser autoplay policy ---
             assets.jumpSound.play().then(() => assets.jumpSound.pause()).catch(()=>{}); 
-            // --------------------------------------------------------------------------
 
             dom.startScreen.style.display = 'none';
             dom.gameContainer.style.display = 'flex';
@@ -624,7 +844,6 @@
             resetGame();
         };
 
-        // --- PAUSE BUTTON FIX APPLIED HERE ---
         dom.pauseBtn.onclick = togglePause;
 
         function togglePause() {
@@ -632,11 +851,13 @@
             state.isPaused = !state.isPaused;
             dom.pauseBtn.innerText = state.isPaused ? "▶" : "II";
             if (state.isPaused) {
-                dom.ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                dom.ctx.fillStyle = 'rgba(0,0,0,0.7)';
                 dom.ctx.fillRect(0, 0, dom.canvas.width / window.devicePixelRatio, dom.canvas.height / window.devicePixelRatio);
-                dom.ctx.fillStyle = '#FFFFFF';
+                dom.ctx.fillStyle = '#00f3ff';
+                dom.ctx.shadowBlur = 10;
+                dom.ctx.shadowColor = '#00f3ff';
                 dom.ctx.textAlign = 'center';
-                dom.ctx.font = '900 40px "Outfit"';
+                dom.ctx.font = '900 40px "Orbitron"';
                 dom.ctx.fillText('PAUSED', (dom.canvas.width / window.devicePixelRatio)/2, 150);
             }
         }
@@ -654,3 +875,5 @@
     </script>
 </body>
 </html>
+
+
