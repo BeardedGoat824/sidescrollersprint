@@ -2,878 +2,399 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Side Scroller Sprint: Neon Edition</title>
-    <meta name="application-name" content="Side Scroller Sprint">
-    <meta name="apple-mobile-web-app-title" content="Side Scroller Sprint">
-    
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
-
-    <meta property="og:image" content="icon-512.png">
-    <meta property="og:title" content="Side Scroller Sprint">
-    <meta property="og:description" content="Can you beat the high score?">
-    <meta property="og:type" content="website">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7055039904830703" crossorigin="anonymous"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3-Lane Runner Pro (Speed Scale)</title>
     <style>
-        :root {
-            --neon-blue: #00f3ff;
-            --neon-pink: #ff00ff;
-            --neon-purple: #bc13fe;
-            --grid-color: rgba(188, 19, 254, 0.3);
-            --bg-color: #050011;
-        }
-
-        html, body {
-            margin: 0; padding: 0; 
-            width: 100%; height: 100%; min-height: 100vh;
-            background-color: var(--bg-color); 
-            color: white;
-            font-family: 'Orbitron', 'Outfit', sans-serif; /* Changed to sci-fi font */
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            overflow-x: hidden; 
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-        }
-
-        /* --- CRT SCANLINE EFFECT --- */
-        body::after {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 999;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        /* --- START SCREEN STYLES --- */
-        #start-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
-            z-index: 100;
+        body { margin: 0; overflow: hidden; background-color: #000000; touch-action: none; font-family: 'Courier New', Courier, monospace; }
+        
+        /* UI OVERLAYS */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
+            justify-content: center; align-items: center;
+            background: rgba(0, 0, 0, 0.85);
+            color: yellow;
+            z-index: 20;
         }
+        
+        h1 { font-size: 3rem; text-shadow: 2px 2px red; margin-bottom: 10px; }
+        p { font-size: 1.2rem; color: white; margin-bottom: 20px; }
+        
+        input { 
+            padding: 10px; font-size: 1.2rem; text-align: center; 
+            border: 2px solid yellow; background: #222; color: white; margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 15px 30px; font-size: 1.5rem; 
+            background: red; color: white; border: 2px solid white;
+            cursor: pointer; font-family: inherit; font-weight: bold;
+        }
+        button:active { background: darkred; }
 
-        /* GLITCH TITLE EFFECT */
-        h1.title {
-            color: #ffffff; 
-            font-size: 45px; margin-bottom: 20px; letter-spacing: 4px;
-            text-align: center;
-            font-weight: 900;
-            text-transform: uppercase;
-            position: relative;
-            text-shadow: 2px 2px 0px var(--neon-pink), -2px -2px 0px var(--neon-blue);
-            animation: glitch 1s infinite;
-        }
-
-        @keyframes glitch {
-            0% { transform: skew(0deg); }
-            20% { transform: skew(-2deg); }
-            40% { transform: skew(2deg); }
-            60% { transform: skew(-1deg); }
-            80% { transform: skew(1deg); }
-            100% { transform: skew(0deg); }
-        }
-
-        #player-name-input {
-            background-color: rgba(0, 0, 0, 0.5); 
-            color: var(--neon-blue); 
-            border: 2px solid var(--neon-blue);
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            font-size: 24px; text-align: center; padding: 15px;
-            margin: 20px 0; outline: none; text-transform: uppercase;
-            width: 250px; border-radius: 5px;
-            box-shadow: 0 0 10px var(--neon-blue);
-            text-shadow: 0 0 5px var(--neon-blue);
-        }
-        #player-name-input::placeholder { color: rgba(0, 243, 255, 0.3); }
-
-        #start-btn {
-            background-color: transparent; 
-            color: var(--neon-pink); 
-            border: 2px solid var(--neon-pink);
-            padding: 15px 50px; font-size: 22px; font-weight: 900;
-            font-family: 'Orbitron', sans-serif;
-            cursor: pointer; 
-            box-shadow: 0 0 15px var(--neon-pink), inset 0 0 10px var(--neon-pink);
-            text-shadow: 0 0 5px var(--neon-pink);
-            transition: all 0.2s;
-            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-        }
-        #start-btn:hover { 
-            background-color: var(--neon-pink); 
-            color: black; 
-            box-shadow: 0 0 30px var(--neon-pink); 
-            transform: scale(1.05); 
-        }
-
-        /* --- GAME UI --- */
-        #game-container { 
-            display: none; 
-            width: 100%; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            margin-top: 50px; 
-            position: relative;
-            z-index: 1; 
+        /* HUD (Heads Up Display) */
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; 
+            display: none; 
         }
         
-        canvas { 
-            pointer-events: auto; 
-            border-bottom: 4px solid var(--neon-purple); 
-            background-color: transparent; /* Transparent so we can see CSS background if needed, but we draw bg in canvas */
-            display: block; 
-            width: 100%;
-            max-width: 800px;
-            box-shadow: 0 0 20px var(--neon-purple);
+        #score-board {
+            position: absolute; top: 20px; right: 20px;
+            font-size: 1.5rem; color: white; font-weight: bold;
+            background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid yellow;
+            text-align: right;
         }
 
-        /* --- INSTRUCTIONS --- */
-        #instructions { 
-            margin-top: 10px;       
-            padding: 0;          
-            text-align: center; 
-            pointer-events: auto; 
-            cursor: pointer;      
-            user-select: none;
-            -webkit-user-select: none;
-            width: 100%;          
-            max-width: 800px;
-        }
-        
-        #jump-btn-img {
-            display: block;
-            margin: 0 auto;
-            width: 100%;         
-            height: auto;
-            filter: drop-shadow(0 0 5px var(--neon-blue)); /* Add glow to the image */
-            transition: transform 0.1s, filter 0.1s;
-        }
-
-        #instructions:active #jump-btn-img {
-            transform: scale(0.98);
-            filter: drop-shadow(0 0 2px var(--neon-blue));
-        }
-        
-        /* PAUSE BUTTON - REPOSITIONED */
         #pause-btn {
-            position: absolute; 
-            top: 0;
-            left: 0; 
-            background: rgba(0, 0, 0, 0.8);
-            color: var(--neon-blue);
-            border: none;
-            border-right: 1px solid var(--neon-purple);
-            border-bottom: 1px solid var(--neon-purple);
-            border-top-left-radius: 8px; /* Match container */
-            border-bottom-right-radius: 8px;
-            padding: 8px 12px;
-            font-weight: 900;
-            font-family: 'Orbitron', sans-serif;
-            cursor: pointer;
-            z-index: 40; 
-            font-size: 14px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-            transition: all 0.2s;
-        }
-        #pause-btn:hover { background: var(--neon-blue); color: black; }
-
-        /* LEADERBOARD STYLES */
-        #leaderboard-container {
-            position: absolute; top: 20px; left: 20px; 
-            width: 220px;
-            background-color: rgba(10, 5, 20, 0.9); 
-            border: 1px solid var(--neon-purple);
-            padding: 15px; z-index: 30; font-size: 12px;
-            box-shadow: 0 0 15px rgba(188, 19, 254, 0.3);
-            border-radius: 8px;
-            /* Padding top adjusted to accommodate button overlap if needed, though button is absolute */
-        }
-        #leaderboard-container h3 {
-            margin: 0 0 10px 0; text-align: center; 
-            border-bottom: 1px solid var(--neon-purple);
-            padding-bottom: 5px; font-size: 16px; color: var(--neon-blue);
-            font-weight: 700; text-shadow: 0 0 5px var(--neon-blue);
-            font-family: 'Orbitron', sans-serif;
-        }
-        #lb-list { list-style: none; padding: 0; margin: 0; font-family: 'Orbitron', sans-serif;}
-        #lb-list li { display: flex; justify-content: space-between; margin-bottom: 6px; color: #ccc; }
-        #lb-list li span.lb-score { color: var(--neon-pink); font-weight: 700; text-shadow: 0 0 5px var(--neon-pink);}
-        .loading-text { text-align: center; color: #555; }
-
-        /* --- FOOTER MESSAGE STYLES --- */
-        @keyframes pulseYellow {
-            0% { opacity: 1; text-shadow: 0 0 10px #FFFF00; }
-            50% { opacity: 0.6; text-shadow: 0 0 2px #888800; }
-            100% { opacity: 1; text-shadow: 0 0 10px #FFFF00; }
+            position: absolute; top: 20px; left: 20px;
+            font-size: 1.5rem; color: white; background: red;
+            width: 50px; height: 50px; line-height: 50px; text-align: center;
+            border: 2px solid white; cursor: pointer; pointer-events: auto;
+            user-select: none;
         }
 
-        #footer-msg {
-            width: 100%;
-            text-align: center;
-            color: #FFFF00; 
-            font-family: 'Orbitron', sans-serif;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 20px 10px;
-            background-color: #050011; 
-            text-shadow: 0 0 8px #FFFF00; 
-            z-index: 200; 
-            box-sizing: border-box;
-            border-top: 1px solid #333;
-            line-height: 1.4;
-            animation: pulseYellow 2s infinite ease-in-out;
-            margin-top: 20px;
-            pointer-events: auto;
+        /* Speed Up Notification */
+        #speed-notif {
+            position: absolute; top: 20%; width: 100%;
+            text-align: center; font-size: 2rem; color: yellow; font-weight: bold;
+            text-shadow: 2px 2px red; opacity: 0; transition: opacity 0.5s;
         }
 
-        #footer-links a {
-            color: #FFFF00; 
-            text-decoration: underline; 
-            font-size: 10px;
-            margin: 0 10px;
-            cursor: pointer;
-        }
-
-        /* --- ABOUT MODAL --- */
-        #about-modal {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 300;
-            align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background: #111; 
-            border: 2px solid var(--neon-blue);
-            padding: 25px; max-width: 90%; width: 400px;
-            text-align: center; border-radius: 10px;
-            box-shadow: 0 0 30px var(--neon-blue);
-        }
-        .modal-content h2 { color: var(--neon-blue); margin-top: 0; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--neon-blue); }
-        .modal-content p { color: #ccc; font-size: 14px; line-height: 1.6; }
-        #close-about-btn {
-            background: #333; color: white; border: 1px solid white;
-            padding: 10px 20px; margin-top: 20px; cursor: pointer;
-            font-family: 'Orbitron', sans-serif; font-weight: bold;
-            transition: 0.2s;
-        }
-        #close-about-btn:hover { background: white; color: black; }
-
-        @media (max-width: 600px) {
-            #game-container { margin-top: 10px !important; }
-            h1.title { font-size: 32px; }
-            #leaderboard-container {
-                position: relative; top: 0; left: 0; width: 90%; margin: 0 auto 5px auto;
-            }
-        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="start-screen">
-        <h1 class="title">SIDE SCROLLER SPRINT</h1>
-        <div style="font-family: 'Orbitron'; color: var(--neon-pink); font-size: 12px; letter-spacing: 2px; margin-bottom: 20px;">NEON EDITION</div>
-        <input type="text" id="player-name-input" placeholder="ENTER CODENAME" maxlength="12" autocomplete="off">
-        <button id="start-btn">INITIALIZE RUN</button>
-        <div style="margin-top: 30px; color: #aaa; font-size: 14px; font-weight: 700; font-family: 'Orbitron';">TOP SCORE: <span id="menu-high-score" style="color: var(--neon-blue)">0</span></div>
-        <div id="firebase-status" style="margin-top: 10px; font-size: 10px; color: #888;"></div>
+    <div id="start-screen" class="screen">
+        <h1>WALL RUNNER</h1>
+        <p>Enter your name, Patriot:</p>
+        <input type="text" id="player-name-input" placeholder="Name" maxlength="10">
+        <button id="start-btn">START RUN</button>
     </div>
 
-    <div id="about-modal">
-        <div class="modal-content">
-            <h2>SYSTEM INFO</h2>
-            <p>
-                Side Scroller Sprint is a fast-paced HTML5 endless runner game. 
-                Test your reflexes by jumping over obstacles in a neon-styled world. 
-                Compete for the high score on our global leaderboard powered by Firebase.
-            </p>
-            <button id="close-about-btn">CLOSE</button>
+    <div id="game-over-screen" class="screen hidden">
+        <h1 style="color: red;">CRASHED!</h1>
+        <p>Runner: <span id="final-name" style="color:yellow"></span></p>
+        <p>Distance: <span id="final-score" style="color:white">0</span> Feet</p>
+        <p>Max Speed Scale: <span id="final-scale" style="color:white">1.0</span></p>
+        <button id="restart-btn">TRY AGAIN</button>
+    </div>
+
+    <div id="pause-screen" class="screen hidden">
+        <h1>PAUSED</h1>
+        <button id="resume-btn">RESUME</button>
+    </div>
+
+    <div id="hud">
+        <div id="pause-btn">||</div>
+        <div id="score-board">
+            <div id="dist-display">0 FT</div>
+            <div id="speed-display" style="font-size: 0.8rem; color: #aaa;">SPD: 1.0</div>
         </div>
-    </div>
-
-    <!-- MOVED PAUSE BUTTON INSIDE CONTAINER -->
-    <div id="leaderboard-container">
-        <button id="pause-btn" style="display:none;">II</button>
-        <h3>GLOBAL TOP 5</h3>
-        <ul id="lb-list">
-            <li class="loading-text">Loading Data...</li>
-        </ul>
-    </div>
-
-    <!-- PAUSE BTN WAS HERE -->
-
-    <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
-        <div id="instructions">
-            <img src="button_jump.png" alt="TAP TO JUMP" id="jump-btn-img">
-        </div>
-    </div>
-
-    <div style="margin-top: 20px; width: 100%; text-align: center; min-height: 90px; z-index: 10;">
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-7055039904830703"
-             data-ad-slot="4684990666" 
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-    </div>
-
-    <div id="footer-msg">
-        SYSTEM NOTICE: Site maintenance this weekend.<br>
-        <div id="footer-links" style="margin-top:5px;">
-            <a id="open-about-btn">About / How-To</a> | 
-            <a href="privacy.html">Privacy Policy</a>
-        </div>
+        <div id="speed-notif">SPEED UP!</div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getDatabase, ref, set, get, child, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-        // --- CONFIGURATION & CONSTANTS ---
-        const CONFIG = {
-            GRAVITY: 1500,        
-            JUMP_FORCE: 600,      
-            START_SPEED: 350,     
-            MAX_SPEED: 1000,
-            SPEED_INC: 15,        
-            SPAWN_MIN: 1.0,       
-            SPAWN_MAX: 2.2,       
-            MIN_GAP: 250          
-        };
+        // --- GAME STATE MANAGEMENT ---
+        let gameState = 'start'; 
+        let score = 0;
+        let playerName = "Player";
+        
+        // --- SPEED LOGIC VARIABLES ---
+        let baseSpeed = 0.4;
+        let forwardSpeed = baseSpeed;
+        let speedScale = 1.0;
+        let maxScale = 100.0;
+        let nextSpeedThreshold = 150;
+        
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const pauseScreen = document.getElementById('pause-screen');
+        const hud = document.getElementById('hud');
+        const distDisplay = document.getElementById('dist-display');
+        const speedDisplay = document.getElementById('speed-display');
+        const speedNotif = document.getElementById('speed-notif');
+        const finalNameDisplay = document.getElementById('final-name');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const finalScaleDisplay = document.getElementById('final-scale');
+        const nameInput = document.getElementById('player-name-input');
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCiRUZZsaBiGKyYGlGc4coI14MG23bzT3g",
-            authDomain: "game-dd2e6.firebaseapp.com",
-            databaseURL: "https://game-dd2e6-default-rtdb.firebaseio.com",
-            projectId: "game-dd2e6",
-            storageBucket: "game-dd2e6.firebasestorage.app",
-            messagingSenderId: "989207031024",
-            appId: "1:989207031024:web:72e77a4cf766e564f66635"
-        };
+        // --- 1. SCENE SETUP ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000); 
+        scene.fog = new THREE.Fog(0x000000, 30, 90); 
 
-        // --- STATE MANAGEMENT ---
-        const state = {
-            lastTime: 0,
-            score: 0,
-            highScore: 0,
-            gameSpeed: CONFIG.START_SPEED,
-            isGameOver: false,
-            isRunning: false,
-            isPaused: false,
-            spawnTimer: 0,
-            nextSpawnTime: 0,
-            name: "ANON",
-            db: null,
-            firebaseReady: false,
-            bgOffset: 0 // For parallax background
-        };
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // High Drone View
+        const cameraOffset = new THREE.Vector3(0, 15, 12); 
 
-        // --- DOM ELEMENTS ---
-        const dom = {
-            startScreen: document.getElementById('start-screen'),
-            gameContainer: document.getElementById('game-container'),
-            startBtn: document.getElementById('start-btn'),
-            pauseBtn: document.getElementById('pause-btn'),
-            nameInput: document.getElementById('player-name-input'),
-            menuHighScore: document.getElementById('menu-high-score'),
-            firebaseStatus: document.getElementById('firebase-status'),
-            lbList: document.getElementById('lb-list'),
-            lbContainer: document.getElementById('leaderboard-container'),
-            canvas: document.getElementById('gameCanvas'),
-            ctx: document.getElementById('gameCanvas').getContext('2d'),
-            instructions: document.getElementById('instructions'),
-            aboutModal: document.getElementById('about-modal'),
-            openAboutBtn: document.getElementById('open-about-btn'),
-            closeAboutBtn: document.getElementById('close-about-btn')
-        };
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
 
-        // --- ASSETS ---
-        const assets = {
-            player: new Image(),
-            gameOverSound: new Audio('Gameover.mp3'),
-            jumpSound: new Audio('jump.mp3'), 
-            loaded: false
-        };
-        assets.player.src = 'trump.png';
-        assets.player.onload = () => assets.loaded = true;
+        // --- 2. LIGHTING ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(10, 30, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
 
-        // --- PARTICLE SYSTEM (New Fancy Stuff) ---
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.size = Math.random() * 5 + 2;
-                this.speedX = Math.random() * 2 - 1 - (state.gameSpeed * 0.005); // Move left with world
-                this.speedY = Math.random() * 2 - 1;
-                this.color = color;
-                this.life = 1.0; // 100% opacity start
-                this.decay = Math.random() * 0.03 + 0.01;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.life -= this.decay;
-            }
-            draw(ctx) {
-                ctx.globalAlpha = this.life;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.globalAlpha = 1.0;
-            }
-        }
-        let particles = [];
+        // --- 3. OBJECTS ---
+        // Ground
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(200, 200),
+            new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
 
-        function spawnParticles(x, y, count, color) {
-            for(let i=0; i<count; i++) {
-                particles.push(new Particle(x, y, color));
-            }
-        }
+        // Lines
+        const lineGeo = new THREE.BoxGeometry(0.2, 0.1, 200);
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
+        const lines = [
+            new THREE.Mesh(lineGeo, lineMat), 
+            new THREE.Mesh(lineGeo, lineMat), 
+            new THREE.Mesh(lineGeo, lineMat), 
+            new THREE.Mesh(lineGeo, lineMat)  
+        ];
+        lines[0].position.set(-1.5, 0.05, 0);
+        lines[1].position.set(1.5, 0.05, 0);
+        lines[2].position.set(-4.5, 0.05, 0);
+        lines[3].position.set(4.5, 0.05, 0);
+        lines.forEach(l => scene.add(l));
 
-        // --- MODAL LOGIC ---
-        dom.openAboutBtn.onclick = (e) => {
-            e.preventDefault();
-            dom.aboutModal.style.display = 'flex';
-        };
-        dom.closeAboutBtn.onclick = () => {
-            dom.aboutModal.style.display = 'none';
-        };
+        // Player
+        const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const textureLoader = new THREE.TextureLoader();
+        const playerTexture = textureLoader.load('trump.png'); 
+        const playerMaterial = new THREE.MeshStandardMaterial({ map: playerTexture, color: 0xffffff });
+        const player = new THREE.Mesh(playerGeometry, playerMaterial);
+        player.castShadow = true;
+        player.position.y = 0.5;
+        scene.add(player);
 
-        // --- FIREBASE SYSTEM (UNCHANGED) ---
-        const FB = {
-            init: (retries = 3) => {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    state.db = getDatabase(app);
-                    state.firebaseReady = true;
-                    dom.firebaseStatus.innerHTML = '<span style="color:#00f3ff">✓ SYSTEM ONLINE</span>';
-                    FB.listenLeaderboard();
-                    FB.fetchPersonalBest();
-                } catch (e) {
-                    if (retries > 0) setTimeout(() => FB.init(retries - 1), 1000);
-                    else dom.firebaseStatus.innerHTML = '<span style="color:#FF4444">✗ SYSTEM OFFLINE</span>';
-                }
-            },
-            sanitize: (key) => key.replace(/[.#$[\]\/]/g, "").substring(0, 50),
-            submit: (score) => {
-                if (!state.firebaseReady) return;
-                const key = FB.sanitize(state.name);
-                const userRef = ref(state.db, `scores/${key}`);
-                get(userRef).then(snap => {
-                    if (!snap.exists() || score > snap.val().score) {
-                        set(userRef, { name: state.name, score: score, timestamp: Date.now() });
-                    }
-                });
-            },
-            fetchPersonalBest: () => {
-                if (!state.firebaseReady || state.name === "ANON") return;
-                get(child(ref(state.db), `scores/${FB.sanitize(state.name)}`)).then(snap => {
-                    if (snap.exists() && snap.val().score > state.highScore) {
-                        state.highScore = snap.val().score;
-                        localStorage.setItem('jumperHighScore', state.highScore);
-                        dom.menuHighScore.innerText = state.highScore;
-                    }
-                });
-            },
-            listenLeaderboard: () => {
-                if (!state.firebaseReady) return;
-                onValue(query(ref(state.db, 'scores'), orderByChild('score'), limitToLast(5)), (snap) => {
-                    const data = snap.val();
-                    if (!data) return;
-                    const sorted = Object.values(data).sort((a, b) => b.score - a.score);
-                    dom.lbList.innerHTML = sorted.map(e => `<li>${e.name} <span class="lb-score">${e.score}</span></li>`).join('');
-                });
-            }
-        };
+        const playerBox = new THREE.Box3();
 
-        // --- OBJECT POOLING ---
-        class Pool {
-            constructor(createFn, maxSize = 20) {
-                this.pool = [];
-                this.createFn = createFn;
-                this.maxSize = maxSize;
-            }
-            get() { return this.pool.length > 0 ? this.pool.pop() : this.createFn(); }
-            return(obj) { if (this.pool.length < this.maxSize) this.pool.push(obj); }
-        }
+        // Obstacles
+        let obstacles = [];
+        const obstacleGeo = new THREE.BoxGeometry(1.5, 2, 1.5);
+        const obstacleMat = new THREE.MeshStandardMaterial({ color: 0xFF0000 });
 
-        class Obstacle {
-            constructor() { this.reset(); }
-            reset() {
-                this.w = 30 + Math.random() * 20;
-                this.h = 40 + Math.random() * 40;
-                this.x = dom.canvas.width / window.devicePixelRatio; 
-                this.y = (dom.canvas.height / window.devicePixelRatio) - this.h;
-                // Fancy neon colors for obstacles
-                const colors = ['#ff00ff', '#00f3ff', '#bc13fe', '#ffe600'];
-                this.color = colors[Math.floor(Math.random() * colors.length)];
-                this.markedForDeletion = false;
-                this.passed = false;
-                this.pulse = 0;
-            }
-            update(dt) {
-                this.x -= state.gameSpeed * dt;
-                this.pulse += dt * 10;
-                if (this.x + this.w < 0) this.markedForDeletion = true;
-            }
-            draw(ctx) {
-                // Neon Glow Effect
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = this.color;
-                ctx.fillStyle = this.color;
-                
-                // Draw fancy block
-                ctx.fillRect(this.x, this.y, this.w, this.h);
-                
-                // Inner highlight
-                ctx.shadowBlur = 0;
-                ctx.fillStyle = "rgba(255,255,255,0.5)";
-                ctx.fillRect(this.x, this.y, 5, this.h);
-            }
-        }
+        // --- 4. LOGIC VARIABLES ---
+        let velocityY = 0;
+        const gravity = -0.025;
+        const jumpStrength = 0.6;
+        let isGrounded = true;
+        let currentLane = 0; 
+        const laneWidth = 3; 
 
-        const obstaclePool = new Pool(() => new Obstacle());
-        let activeObstacles = [];
+        // --- 5. FUNCTIONS ---
 
-        // --- PLAYER ENTITY ---
-        const player = {
-            x: 80, y: 150, radius: 35, dy: 0, grounded: false,
-            trailTimer: 0,
-            draw: function(ctx) {
-                // Draw Shadow/Glow
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = '#00f3ff';
-
-                if (assets.loaded) {
-                    const size = this.radius * 2;
-                    ctx.drawImage(assets.player, this.x - this.radius, this.y - this.radius, size, size);
-                } else {
-                    ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = '#00f3ff'; ctx.fill();
-                }
-                ctx.shadowBlur = 0;
-            },
-            update: function(dt) {
-                this.dy += CONFIG.GRAVITY * dt;
-                this.y += this.dy * dt;
-                
-                // Trail Effect
-                this.trailTimer += dt;
-                if (this.trailTimer > 0.05) {
-                    spawnParticles(this.x - 10, this.y + 10, 1, '#00f3ff');
-                    this.trailTimer = 0;
-                }
-                
-                const floor = (dom.canvas.height / window.devicePixelRatio) - this.radius;
-                if (this.y > floor) {
-                    this.y = floor;
-                    this.dy = 0;
-                    if (!this.grounded) {
-                        // Landed effect
-                        spawnParticles(this.x, this.y + this.radius, 5, '#ffffff');
-                    }
-                    this.grounded = true;
-                } else {
-                    this.grounded = false;
-                }
-            },
-            jump: function() {
-                if (this.grounded) {
-                    this.dy = -CONFIG.JUMP_FORCE;
-                    this.grounded = false;
-                    assets.jumpSound.currentTime = 0; 
-                    assets.jumpSound.play().catch(()=>{});
-                    // Jump particles
-                    spawnParticles(this.x, this.y + this.radius, 8, '#00f3ff');
-                }
-            }
-        };
-
-        // --- BACKGROUND RENDERER ---
-        function drawBackground(ctx, width, height) {
-            // Retro Sun
-            const sunY = height * 0.4;
-            const sunX = width * 0.7;
-            const gradient = ctx.createLinearGradient(0, 0, 0, height);
-            gradient.addColorStop(0, "#050011");
-            gradient.addColorStop(1, "#2a003b");
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0,0,width,height);
-
-            // Draw Sun
-            ctx.shadowBlur = 40;
-            ctx.shadowColor = "#ff0080";
-            ctx.fillStyle = "#ff0080";
-            ctx.beginPath();
-            ctx.arc(sunX, sunY, 60, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            // Draw Sun Stripes (scanlines over sun)
-            ctx.fillStyle = "#2a003b"; // Match bottom bg
-            for(let i=0; i<10; i++) {
-                ctx.fillRect(sunX - 65, sunY - 20 + (i*8), 130, 3);
-            }
-
-            // Draw Grid (Perspective)
-            ctx.strokeStyle = "rgba(188, 19, 254, 0.4)";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            
-            // Vertical Lines moving left
-            const horizonY = height * 0.6;
-            const speedMultiplier = 0.5;
-            const offset = (state.bgOffset * speedMultiplier) % 100;
-            
-            // Horizontal lines (perspective)
-            for (let i = 0; i < 10; i++) {
-                const y = horizonY + (i * i * 3) + 10; // Quadratic spacing for depth
-                if (y > height) break;
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-            }
-
-            // Vertical fan lines
-            for (let i = -10; i < 20; i++) {
-                // Slanted lines originating from center-ish
-                const x = (i * 100) - offset;
-                ctx.moveTo(x + (width/2), horizonY);
-                ctx.lineTo(x * 4, height); // Spread out at bottom
-            }
-            ctx.stroke();
-        }
-
-        // --- CORE SYSTEMS ---
-        function resize() {
-            const dpr = window.devicePixelRatio || 1;
-            const width = Math.min(window.innerWidth - 20, 800);
-            const height = 350; // Taller for better background view
-            dom.canvas.width = width * dpr;
-            dom.canvas.height = height * dpr;
-            dom.canvas.style.width = `${width}px`;
-            dom.canvas.style.height = `${height}px`;
-            dom.ctx.scale(dpr, dpr);
-        }
-
-        function checkCollision(p, o) {
-            // Simplified hit box for fairness
-            const hitPadding = 10; 
-            const distX = Math.abs(p.x - o.x - o.w / 2);
-            const distY = Math.abs(p.y - o.y - o.h / 2);
-            
-            if (distX > (o.w / 2 + p.radius - hitPadding)) return false;
-            if (distY > (o.h / 2 + p.radius - hitPadding)) return false;
-            if (distX <= (o.w / 2)) return true; 
-            if (distY <= (o.h / 2)) return true;
-            
-            const dx = distX - o.w / 2;
-            const dy = distY - o.h / 2;
-            return (dx * dx + dy * dy <= ((p.radius - hitPadding) * (p.radius - hitPadding)));
+        function startGame() {
+            playerName = nameInput.value || "Anonymous";
+            resetGame();
+            gameState = 'playing';
+            startScreen.classList.add('hidden');
+            hud.style.display = 'block';
         }
 
         function resetGame() {
-            state.score = 0;
-            state.gameSpeed = CONFIG.START_SPEED;
-            state.isGameOver = false;
-            state.spawnTimer = 0;
-            activeObstacles.forEach(o => obstaclePool.return(o));
-            activeObstacles = [];
-            particles = [];
-            player.y = 150; player.dy = 0;
-            state.lastTime = performance.now();
-            requestAnimationFrame(loop);
+            // Reset Positions
+            player.position.set(0, 0.5, 0);
+            currentLane = 0;
+            velocityY = 0;
+            isGrounded = true;
+            score = 0;
+            
+            // Reset Speed Logic
+            speedScale = 1.0;
+            nextSpeedThreshold = 150;
+            forwardSpeed = baseSpeed;
+            
+            // Clear Obstacles
+            obstacles.forEach(obs => scene.remove(obs));
+            obstacles = [];
+
+            // Update UI
+            distDisplay.innerText = "0 FT";
+            speedDisplay.innerText = "SPD: 1.0";
+            gameOverScreen.classList.add('hidden');
+            pauseScreen.classList.add('hidden');
         }
-
-        function loop(timestamp) {
-            if (!state.isRunning || state.isGameOver) return;
-            if (state.isPaused) { state.lastTime = timestamp; requestAnimationFrame(loop); return; }
-
-            const dt = (timestamp - state.lastTime) / 1000;
-            state.lastTime = timestamp;
-            state.bgOffset += state.gameSpeed * dt;
-
-            // Draw Background First
-            const w = dom.canvas.width / window.devicePixelRatio;
-            const h = dom.canvas.height / window.devicePixelRatio;
-            drawBackground(dom.ctx, w, h);
-
-            player.update(dt);
-            if (state.gameSpeed < CONFIG.MAX_SPEED) state.gameSpeed += CONFIG.SPEED_INC * dt;
-
-            // Spawn Logic
-            state.spawnTimer += dt;
-            if (state.spawnTimer >= state.nextSpawnTime) {
-                const lastObs = activeObstacles[activeObstacles.length - 1];
-                const safeGap = !lastObs || (w - (lastObs.x + lastObs.w) > CONFIG.MIN_GAP);
-                if (safeGap) {
-                    const obs = obstaclePool.get();
-                    obs.reset();
-                    activeObstacles.push(obs);
-                    state.spawnTimer = 0;
-                    state.nextSpawnTime = CONFIG.SPAWN_MIN + Math.random() * (CONFIG.SPAWN_MAX - CONFIG.SPAWN_MIN);
-                }
-            }
-
-            // Update Obstacles
-            for (let i = activeObstacles.length - 1; i >= 0; i--) {
-                let obs = activeObstacles[i];
-                obs.update(dt);
-                obs.draw(dom.ctx);
-                if (checkCollision(player, obs)) { gameOver(); return; }
-                if (!obs.passed && obs.x + obs.w < player.x - player.radius) { 
-                    state.score++; 
-                    obs.passed = true;
-                    // Score particle
-                    spawnParticles(player.x, player.y - 40, 5, '#ffff00');
-                }
-                if (obs.markedForDeletion) { obstaclePool.return(obs); activeObstacles.splice(i, 1); }
-            }
-
-            // Update Particles
-            for (let i = particles.length - 1; i >= 0; i--) {
-                let p = particles[i];
-                p.update();
-                p.draw(dom.ctx);
-                if (p.life <= 0) particles.splice(i, 1);
-            }
-
-            player.draw(dom.ctx);
-            drawUI();
-            requestAnimationFrame(loop);
-        }
-
-        function drawUI() {
-            dom.ctx.fillStyle = '#00f3ff';
-            dom.ctx.shadowBlur = 5;
-            dom.ctx.shadowColor = '#00f3ff';
-            dom.ctx.font = 'bold 24px "Orbitron", sans-serif';
-            dom.ctx.textAlign = 'left';
-            dom.ctx.fillText(`${state.name}`, 20, 35);
-            
-            dom.ctx.fillStyle = '#ff00ff';
-            dom.ctx.shadowColor = '#ff00ff';
-            dom.ctx.fillText(`SCORE: ${state.score}`, 20, 70);
-            
-            dom.ctx.fillStyle = '#ffffff';
-            dom.ctx.shadowBlur = 0;
-            dom.ctx.font = '16px "Orbitron", sans-serif';
-            dom.ctx.fillText(`HIGH: ${state.highScore}`, 20, 95);
-        }
-
-        function gameOver() {
-            state.isGameOver = true;
-            assets.gameOverSound.play().catch(()=>{});
-            if (state.score > state.highScore) {
-                state.highScore = state.score;
-                localStorage.setItem('jumperHighScore', state.highScore);
-            }
-            FB.submit(state.score);
-            
-            // Game Over overlay
-            dom.ctx.fillStyle = 'rgba(0,0,0,0.85)';
-            dom.ctx.fillRect(0, 0, dom.canvas.width / window.devicePixelRatio, dom.canvas.height / window.devicePixelRatio);
-            
-            dom.ctx.shadowBlur = 20;
-            dom.ctx.shadowColor = '#FF0000';
-            dom.ctx.fillStyle = '#FF0000';
-            dom.ctx.textAlign = 'center';
-            dom.ctx.font = '900 40px "Orbitron"';
-            dom.ctx.fillText('SYSTEM FAILURE', (dom.canvas.width / window.devicePixelRatio)/2, 130);
-            
-            dom.ctx.shadowBlur = 0;
-            dom.ctx.fillStyle = 'white';
-            dom.ctx.font = 'bold 20px "Orbitron"';
-            dom.ctx.fillText('TAP TO REBOOT', (dom.canvas.width / window.devicePixelRatio)/2, 170);
-        }
-
-        // --- INPUT HANDLING ---
-        function handleInput(e) {
-            if (!state.isRunning) return;
-            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
-            
-            if (state.isGameOver) resetGame();
-            else if (!state.isPaused) player.jump();
-        }
-
-        window.addEventListener('keydown', e => {
-            if (e.code === 'KeyP') togglePause();
-            else if (e.code === 'Space' || e.code === 'ArrowUp') handleInput(e);
-        });
-        
-        dom.instructions.addEventListener('mousedown', handleInput);
-        dom.instructions.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
-
-        window.addEventListener('touchstart', handleInput, {passive: false});
-        window.addEventListener('mousedown', handleInput);
-        window.addEventListener('resize', resize);
-
-        // --- INIT ---
-        dom.startBtn.onclick = () => {
-            state.name = dom.nameInput.value.trim().toUpperCase() || "ANON";
-            localStorage.setItem('neonJumperName', state.name);
-            
-            assets.jumpSound.play().then(() => assets.jumpSound.pause()).catch(()=>{}); 
-
-            dom.startScreen.style.display = 'none';
-            dom.gameContainer.style.display = 'flex';
-            dom.pauseBtn.style.display = 'block';
-            state.isRunning = true;
-            FB.fetchPersonalBest();
-            resetGame();
-        };
-
-        dom.pauseBtn.onclick = togglePause;
 
         function togglePause() {
-            if (!state.isRunning || state.isGameOver) return;
-            state.isPaused = !state.isPaused;
-            dom.pauseBtn.innerText = state.isPaused ? "▶" : "II";
-            if (state.isPaused) {
-                dom.ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                dom.ctx.fillRect(0, 0, dom.canvas.width / window.devicePixelRatio, dom.canvas.height / window.devicePixelRatio);
-                dom.ctx.fillStyle = '#00f3ff';
-                dom.ctx.shadowBlur = 10;
-                dom.ctx.shadowColor = '#00f3ff';
-                dom.ctx.textAlign = 'center';
-                dom.ctx.font = '900 40px "Orbitron"';
-                dom.ctx.fillText('PAUSED', (dom.canvas.width / window.devicePixelRatio)/2, 150);
+            if (gameState === 'playing') {
+                gameState = 'paused';
+                pauseScreen.classList.remove('hidden');
+            } else if (gameState === 'paused') {
+                gameState = 'playing';
+                pauseScreen.classList.add('hidden');
             }
         }
 
-        const savedName = localStorage.getItem('neonJumperName');
-        if (savedName) dom.nameInput.value = savedName;
-        const savedScore = localStorage.getItem('jumperHighScore');
-        if (savedScore) {
-            state.highScore = parseInt(savedScore);
-            dom.menuHighScore.innerText = state.highScore;
+        function triggerGameOver() {
+            gameState = 'gameover';
+            hud.style.display = 'none';
+            gameOverScreen.classList.remove('hidden');
+            finalNameDisplay.innerText = playerName;
+            finalScoreDisplay.innerText = score;
+            finalScaleDisplay.innerText = speedScale.toFixed(1);
         }
 
-        FB.init();
-        resize();
+        function updateSpeed() {
+            // If we hit the threshold and aren't at max scale
+            if (score >= nextSpeedThreshold && speedScale < maxScale) {
+                speedScale += 0.5;
+                nextSpeedThreshold += 150;
+                
+                // Calculate new speed
+                // Formula: Base * (1 + (Scale-1) * 0.2)
+                // This makes Scale 1 = 0.4, Scale 2 = 0.48, etc. 
+                // A purely linear 'Speed = Base * Scale' (0.4 * 2 = 0.8) becomes unplayable too fast.
+                // We use a coefficient to make the 1-100 scale meaningful but playable.
+                forwardSpeed = baseSpeed + ((speedScale - 1) * 0.04); 
+
+                // Update UI
+                speedDisplay.innerText = "SPD: " + speedScale.toFixed(1);
+                
+                // Flash Notification
+                speedNotif.style.opacity = 1;
+                setTimeout(() => { speedNotif.style.opacity = 0; }, 1000);
+            }
+        }
+
+        // --- 6. INPUT HANDLING ---
+        document.getElementById('start-btn').addEventListener('click', startGame);
+        document.getElementById('restart-btn').addEventListener('click', startGame);
+        document.getElementById('pause-btn').addEventListener('click', togglePause);
+        document.getElementById('resume-btn').addEventListener('click', togglePause);
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            if(gameState !== 'playing') return;
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+            touchStartTime = new Date().getTime();
+        }, { passive: false });
+
+        document.addEventListener('touchend', (e) => {
+            if(gameState !== 'playing') return;
+            const deltaX = e.changedTouches[0].screenX - touchStartX;
+            const deltaY = e.changedTouches[0].screenY - touchStartY;
+            const time = new Date().getTime() - touchStartTime;
+
+            if (Math.abs(deltaX) < 30 && Math.abs(deltaY) < 30 && time < 300) doJump();
+            else if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX > 30) changeLane(1); 
+                else if (deltaX < -30) changeLane(-1); 
+            }
+        }, { passive: false });
+
+        document.addEventListener('keydown', (e) => {
+            if(gameState !== 'playing') return;
+            if(e.key === 'ArrowLeft' || e.key === 'a') changeLane(-1);
+            if(e.key === 'ArrowRight' || e.key === 'd') changeLane(1);
+            if(e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') doJump();
+            if(e.key === 'p' || e.key === 'Escape') togglePause();
+        });
+
+        function doJump() { if (isGrounded) { velocityY = jumpStrength; isGrounded = false; } }
+        function changeLane(dir) { 
+            currentLane += dir; 
+            if (currentLane < -1) currentLane = -1; 
+            if (currentLane > 1) currentLane = 1; 
+        }
+
+        // --- 7. MAIN LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameState !== 'playing') return;
+
+            // 1. Movement & Speed Logic
+            player.position.z -= forwardSpeed;
+            score = Math.floor(Math.abs(player.position.z));
+            distDisplay.innerText = score + " FT";
+            
+            updateSpeed();
+
+            // 2. Camera Logic (Fixed High View)
+            camera.position.z = player.position.z + cameraOffset.z;
+            camera.position.y = cameraOffset.y; 
+            camera.position.x += (player.position.x - camera.position.x) * 0.1;
+            camera.lookAt(player.position.x, player.position.y, player.position.z - 10);
+            
+            ground.position.z = player.position.z;
+            lines.forEach(l => l.position.z = player.position.z);
+
+            // 3. Lane Smoothing
+            const targetX = currentLane * laneWidth;
+            player.position.x += (targetX - player.position.x) * 0.2;
+
+            // 4. Physics
+            player.position.y += velocityY;
+            if (player.position.y > 0.5) {
+                velocityY += gravity;
+                isGrounded = false;
+            } else {
+                player.position.y = 0.5;
+                velocityY = 0;
+                isGrounded = true;
+            }
+
+            // 5. Collision Box
+            playerBox.setFromObject(player); 
+            playerBox.expandByScalar(-0.2); 
+
+            // 6. Obstacles
+            // Increase spawn rate slightly as speed increases to keep density
+            const spawnChance = 0.03 + (speedScale * 0.002);
+            
+            if (Math.random() < spawnChance) { 
+                const obs = new THREE.Mesh(obstacleGeo, obstacleMat);
+                const lane = Math.floor(Math.random() * 3) - 1; 
+                // Spawn distance increases with speed so they don't pop in too close
+                const spawnDist = 80 + (speedScale * 2);
+                obs.position.set(lane * laneWidth, 1, player.position.z - spawnDist); 
+                obs.castShadow = true;
+                scene.add(obs);
+                obstacles.push(obs);
+            }
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                if (obs.position.z > player.position.z + 10) {
+                    scene.remove(obs);
+                    obstacles.splice(i, 1);
+                    continue;
+                }
+                const obsBox = new THREE.Box3().setFromObject(obs);
+                if (playerBox.intersectsBox(obsBox)) {
+                    triggerGameOver();
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
     </script>
 </body>
 </html>
-
-
