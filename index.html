@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3-Lane Runner Pro (Skeleton Edition)</title>
+    <title>3-Lane Runner Pro (Cube Edition)</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000000; touch-action: none; font-family: 'Courier New', Courier, monospace; }
         
@@ -271,22 +271,12 @@
         lines[3].position.set(4.5, 0.05, 0);
         lines.forEach(l => scene.add(l));
 
-        // --- PLAYER (SKELETON SPRITE) ---
-        // Using PlaneGeometry to display the 2D image correctly
-        const playerGeometry = new THREE.PlaneGeometry(1.2, 1.2);
-        const textureLoader = new THREE.TextureLoader();
-        const playerTexture = textureLoader.load('2277.png'); // NEW IMAGE
-        
-        const playerMaterial = new THREE.MeshStandardMaterial({ 
-            map: playerTexture, 
-            color: 0xffffff,
-            transparent: true, // Allows for transparency in PNG
-            side: THREE.DoubleSide
-        });
-        
+        // --- PLAYER (WHITE CUBE) ---
+        const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const playerMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff }); // Plain White
         const player = new THREE.Mesh(playerGeometry, playerMaterial);
         player.castShadow = true;
-        player.position.y = 0.5;
+        player.position.y = 0.5; // Sitting on ground (height/2)
         scene.add(player);
 
         const playerBox = new THREE.Box3();
@@ -314,7 +304,7 @@
         }
 
         function resetGame() {
-            player.position.set(0, 0.5, 0);
+            player.position.set(0, 0.5, 0); // Reset to center lane, on ground
             currentLane = 0;
             velocityY = 0;
             isGrounded = true;
@@ -446,7 +436,7 @@
 
             // Collisions
             playerBox.setFromObject(player); 
-            playerBox.expandByScalar(-0.2); 
+            playerBox.expandByScalar(-0.2); // Tighter hit box for cube
 
             // Obstacle Spawning
             const spawnChance = 0.03 + (speedScale * 0.002);
