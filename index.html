@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3-Lane Runner Pro (Speed Scale)</title>
+    <title>3-Lane Runner Pro (Skeleton Edition)</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000000; touch-action: none; font-family: 'Courier New', Courier, monospace; }
         
@@ -62,6 +62,29 @@
             text-shadow: 2px 2px red; opacity: 0; transition: opacity 0.5s;
         }
 
+        /* --- LEADERBOARD STYLES --- */
+        #leaderboard-container {
+            margin-top: 20px;
+            width: 300px;
+            background-color: rgba(20, 20, 20, 0.9); 
+            border: 2px solid yellow;
+            padding: 15px; 
+            color: white;
+            text-align: left;
+        }
+        #leaderboard-container h3 {
+            margin: 0 0 10px 0; text-align: center; 
+            border-bottom: 1px solid red;
+            padding-bottom: 5px; font-size: 1.2rem; color: yellow;
+            text-transform: uppercase;
+        }
+        #lb-list { list-style: none; padding: 0; margin: 0; font-size: 1rem; }
+        #lb-list li { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #444; }
+        #lb-list li span.lb-score { color: red; font-weight: bold; }
+        .loading-text { text-align: center; color: #888; font-size: 0.8rem; }
+        
+        #firebase-status { font-size: 0.8rem; margin-top: 5px; color: #555; }
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -72,6 +95,15 @@
         <p>Enter your name, Patriot:</p>
         <input type="text" id="player-name-input" placeholder="Name" maxlength="10">
         <button id="start-btn">START RUN</button>
+
+        <div id="firebase-status">Initializing System...</div>
+        
+        <div id="leaderboard-container">
+            <h3>GLOBAL TOP 5</h3>
+            <ul id="lb-list">
+                <li class="loading-text">CONNECTING TO DATABASE...</li>
+            </ul>
+        </div>
     </div>
 
     <div id="game-over-screen" class="screen hidden">
@@ -92,37 +124,108 @@
         <div id="score-board">
             <div id="dist-display">0 FT</div>
             <div id="speed-display" style="font-size: 0.8rem; color: #aaa;">SPD: 1.0</div>
+            <div id="high-score-display" style="font-size: 0.8rem; color: yellow; margin-top:5px;">BEST: 0</div>
         </div>
         <div id="speed-notif">SPEED UP!</div>
     </div>
 
     <script type="module">
         import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getDatabase, ref, set, get, child, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-        // --- GAME STATE MANAGEMENT ---
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCiRUZZsaBiGKyYGlGc4coI14MG23bzT3g",
+            authDomain: "game-dd2e6.firebaseapp.com",
+            databaseURL: "https://game-dd2e6-default-rtdb.firebaseio.com",
+            projectId: "game-dd2e6",
+            storageBucket: "game-dd2e6.firebasestorage.app",
+            messagingSenderId: "989207031024",
+            appId: "1:989207031024:web:72e77a4cf766e564f66635"
+        };
+
+        // --- GAME STATE ---
         let gameState = 'start'; 
         let score = 0;
+        let personalBest = 0;
         let playerName = "Player";
         
-        // --- SPEED LOGIC VARIABLES ---
         let baseSpeed = 0.4;
         let forwardSpeed = baseSpeed;
         let speedScale = 1.0;
         let maxScale = 100.0;
         let nextSpeedThreshold = 150;
         
-        // DOM Elements
         const startScreen = document.getElementById('start-screen');
         const gameOverScreen = document.getElementById('game-over-screen');
         const pauseScreen = document.getElementById('pause-screen');
         const hud = document.getElementById('hud');
         const distDisplay = document.getElementById('dist-display');
         const speedDisplay = document.getElementById('speed-display');
+        const highScoreDisplay = document.getElementById('high-score-display');
         const speedNotif = document.getElementById('speed-notif');
         const finalNameDisplay = document.getElementById('final-name');
         const finalScoreDisplay = document.getElementById('final-score');
         const finalScaleDisplay = document.getElementById('final-scale');
         const nameInput = document.getElementById('player-name-input');
+        const lbList = document.getElementById('lb-list');
+        const firebaseStatus = document.getElementById('firebase-status');
+
+        // --- FIREBASE LOGIC ---
+        const FB = {
+            db: null,
+            ready: false,
+            init: function() {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    this.db = getDatabase(app);
+                    this.ready = true;
+                    firebaseStatus.innerHTML = '<span style="color:green">✓ ONLINE LINK ESTABLISHED</span>';
+                    this.listenLeaderboard();
+                } catch (e) {
+                    console.error(e);
+                    firebaseStatus.innerHTML = '<span style="color:red">✗ OFFLINE MODE</span>';
+                }
+            },
+            sanitize: (key) => key.replace(/[.#$[\]\/]/g, "").substring(0, 50),
+            submit: function(finalScore) {
+                if (!this.ready) return;
+                const safeName = playerName.trim() === "" ? "ANONYMOUS" : playerName;
+                const key = this.sanitize(safeName);
+                const userRef = ref(this.db, `scores/${key}`);
+                
+                get(userRef).then(snap => {
+                    if (!snap.exists() || finalScore > snap.val().score) {
+                        set(userRef, { name: safeName, score: finalScore, timestamp: Date.now() });
+                    }
+                });
+            },
+            fetchPersonalBest: function() {
+                if (!this.ready || !playerName) return;
+                const key = this.sanitize(playerName);
+                get(child(ref(this.db), `scores/${key}`)).then(snap => {
+                    if (snap.exists()) {
+                        personalBest = snap.val().score;
+                        highScoreDisplay.innerText = "BEST: " + personalBest;
+                    }
+                });
+            },
+            listenLeaderboard: function() {
+                if (!this.ready) return;
+                onValue(query(ref(this.db, 'scores'), orderByChild('score'), limitToLast(5)), (snap) => {
+                    const data = snap.val();
+                    if (!data) {
+                        lbList.innerHTML = "<li>No Data Found</li>";
+                        return;
+                    }
+                    const sorted = Object.values(data).sort((a, b) => b.score - a.score);
+                    lbList.innerHTML = sorted.map(e => 
+                        `<li>${e.name.substring(0,10)} <span class="lb-score">${e.score}</span></li>`
+                    ).join('');
+                });
+            }
+        };
 
         // --- 1. SCENE SETUP ---
         const scene = new THREE.Scene();
@@ -130,7 +233,6 @@
         scene.fog = new THREE.Fog(0x000000, 30, 90); 
 
         const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // High Drone View
         const cameraOffset = new THREE.Vector3(0, 15, 12); 
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -147,7 +249,6 @@
         scene.add(dirLight);
 
         // --- 3. OBJECTS ---
-        // Ground
         const ground = new THREE.Mesh(
             new THREE.PlaneGeometry(200, 200),
             new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 })
@@ -156,7 +257,6 @@
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Lines
         const lineGeo = new THREE.BoxGeometry(0.2, 0.1, 200);
         const lineMat = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
         const lines = [
@@ -171,11 +271,19 @@
         lines[3].position.set(4.5, 0.05, 0);
         lines.forEach(l => scene.add(l));
 
-        // Player
-        const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+        // --- PLAYER (SKELETON SPRITE) ---
+        // Using PlaneGeometry to display the 2D image correctly
+        const playerGeometry = new THREE.PlaneGeometry(1.2, 1.2);
         const textureLoader = new THREE.TextureLoader();
-        const playerTexture = textureLoader.load('trump.png'); 
-        const playerMaterial = new THREE.MeshStandardMaterial({ map: playerTexture, color: 0xffffff });
+        const playerTexture = textureLoader.load('2277.png'); // NEW IMAGE
+        
+        const playerMaterial = new THREE.MeshStandardMaterial({ 
+            map: playerTexture, 
+            color: 0xffffff,
+            transparent: true, // Allows for transparency in PNG
+            side: THREE.DoubleSide
+        });
+        
         const player = new THREE.Mesh(playerGeometry, playerMaterial);
         player.castShadow = true;
         player.position.y = 0.5;
@@ -188,7 +296,7 @@
         const obstacleGeo = new THREE.BoxGeometry(1.5, 2, 1.5);
         const obstacleMat = new THREE.MeshStandardMaterial({ color: 0xFF0000 });
 
-        // --- 4. LOGIC VARIABLES ---
+        // --- 4. LOGIC ---
         let velocityY = 0;
         const gravity = -0.025;
         const jumpStrength = 0.6;
@@ -196,10 +304,9 @@
         let currentLane = 0; 
         const laneWidth = 3; 
 
-        // --- 5. FUNCTIONS ---
-
         function startGame() {
             playerName = nameInput.value || "Anonymous";
+            FB.fetchPersonalBest();
             resetGame();
             gameState = 'playing';
             startScreen.classList.add('hidden');
@@ -207,23 +314,16 @@
         }
 
         function resetGame() {
-            // Reset Positions
             player.position.set(0, 0.5, 0);
             currentLane = 0;
             velocityY = 0;
             isGrounded = true;
             score = 0;
-            
-            // Reset Speed Logic
             speedScale = 1.0;
             nextSpeedThreshold = 150;
             forwardSpeed = baseSpeed;
-            
-            // Clear Obstacles
             obstacles.forEach(obs => scene.remove(obs));
             obstacles = [];
-
-            // Update UI
             distDisplay.innerText = "0 FT";
             speedDisplay.innerText = "SPD: 1.0";
             gameOverScreen.classList.add('hidden');
@@ -247,33 +347,26 @@
             finalNameDisplay.innerText = playerName;
             finalScoreDisplay.innerText = score;
             finalScaleDisplay.innerText = speedScale.toFixed(1);
+            FB.submit(score);
         }
 
         function updateSpeed() {
-            // If we hit the threshold and aren't at max scale
             if (score >= nextSpeedThreshold && speedScale < maxScale) {
                 speedScale += 0.5;
                 nextSpeedThreshold += 150;
-                
-                // Calculate new speed
-                // Formula: Base * (1 + (Scale-1) * 0.2)
-                // This makes Scale 1 = 0.4, Scale 2 = 0.48, etc. 
-                // A purely linear 'Speed = Base * Scale' (0.4 * 2 = 0.8) becomes unplayable too fast.
-                // We use a coefficient to make the 1-100 scale meaningful but playable.
                 forwardSpeed = baseSpeed + ((speedScale - 1) * 0.04); 
-
-                // Update UI
                 speedDisplay.innerText = "SPD: " + speedScale.toFixed(1);
-                
-                // Flash Notification
                 speedNotif.style.opacity = 1;
                 setTimeout(() => { speedNotif.style.opacity = 0; }, 1000);
             }
         }
 
-        // --- 6. INPUT HANDLING ---
+        // --- 5. INPUT ---
         document.getElementById('start-btn').addEventListener('click', startGame);
-        document.getElementById('restart-btn').addEventListener('click', startGame);
+        document.getElementById('restart-btn').addEventListener('click', () => {
+             gameOverScreen.classList.add('hidden');
+             startScreen.classList.remove('hidden');
+        });
         document.getElementById('pause-btn').addEventListener('click', togglePause);
         document.getElementById('resume-btn').addEventListener('click', togglePause);
 
@@ -316,20 +409,19 @@
             if (currentLane > 1) currentLane = 1; 
         }
 
-        // --- 7. MAIN LOOP ---
+        // --- 6. ANIMATION LOOP ---
         function animate() {
             requestAnimationFrame(animate);
 
             if (gameState !== 'playing') return;
 
-            // 1. Movement & Speed Logic
+            // Movement
             player.position.z -= forwardSpeed;
             score = Math.floor(Math.abs(player.position.z));
             distDisplay.innerText = score + " FT";
-            
             updateSpeed();
 
-            // 2. Camera Logic (Fixed High View)
+            // Camera
             camera.position.z = player.position.z + cameraOffset.z;
             camera.position.y = cameraOffset.y; 
             camera.position.x += (player.position.x - camera.position.x) * 0.1;
@@ -338,11 +430,10 @@
             ground.position.z = player.position.z;
             lines.forEach(l => l.position.z = player.position.z);
 
-            // 3. Lane Smoothing
+            // Lane Physics
             const targetX = currentLane * laneWidth;
             player.position.x += (targetX - player.position.x) * 0.2;
 
-            // 4. Physics
             player.position.y += velocityY;
             if (player.position.y > 0.5) {
                 velocityY += gravity;
@@ -353,18 +444,15 @@
                 isGrounded = true;
             }
 
-            // 5. Collision Box
+            // Collisions
             playerBox.setFromObject(player); 
             playerBox.expandByScalar(-0.2); 
 
-            // 6. Obstacles
-            // Increase spawn rate slightly as speed increases to keep density
+            // Obstacle Spawning
             const spawnChance = 0.03 + (speedScale * 0.002);
-            
             if (Math.random() < spawnChance) { 
                 const obs = new THREE.Mesh(obstacleGeo, obstacleMat);
                 const lane = Math.floor(Math.random() * 3) - 1; 
-                // Spawn distance increases with speed so they don't pop in too close
                 const spawnDist = 80 + (speedScale * 2);
                 obs.position.set(lane * laneWidth, 1, player.position.z - spawnDist); 
                 obs.castShadow = true;
@@ -394,6 +482,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
+        FB.init();
         animate();
     </script>
 </body>
