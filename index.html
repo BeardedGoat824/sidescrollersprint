@@ -2,478 +2,664 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3-Lane Runner Pro (Cube Edition)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEON SPRINT | Hyper-Casual Runner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000000; touch-action: none; font-family: 'Courier New', Courier, monospace; }
-        
-        /* UI OVERLAYS */
-        .screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            background: rgba(0, 0, 0, 0.85);
-            color: yellow;
-            z-index: 20;
-        }
-        
-        h1 { font-size: 3rem; text-shadow: 2px 2px red; margin-bottom: 10px; }
-        p { font-size: 1.2rem; color: white; margin-bottom: 20px; }
-        
-        input { 
-            padding: 10px; font-size: 1.2rem; text-align: center; 
-            border: 2px solid yellow; background: #222; color: white; margin-bottom: 20px;
-        }
-        
-        button {
-            padding: 15px 30px; font-size: 1.5rem; 
-            background: red; color: white; border: 2px solid white;
-            cursor: pointer; font-family: inherit; font-weight: bold;
-        }
-        button:active { background: darkred; }
-
-        /* HUD (Heads Up Display) */
-        #hud {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; 
-            display: none; 
-        }
-        
-        #score-board {
-            position: absolute; top: 20px; right: 20px;
-            font-size: 1.5rem; color: white; font-weight: bold;
-            background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid yellow;
-            text-align: right;
-        }
-
-        #pause-btn {
-            position: absolute; top: 20px; left: 20px;
-            font-size: 1.5rem; color: white; background: red;
-            width: 50px; height: 50px; line-height: 50px; text-align: center;
-            border: 2px solid white; cursor: pointer; pointer-events: auto;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: none; /* Prevent default touch actions */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
             user-select: none;
         }
 
-        /* Speed Up Notification */
-        #speed-notif {
-            position: absolute; top: 20%; width: 100%;
-            text-align: center; font-size: 2rem; color: yellow; font-weight: bold;
-            text-shadow: 2px 2px red; opacity: 0; transition: opacity 0.5s;
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            position: relative;
+            touch-action: none;
         }
 
-        /* --- LEADERBOARD STYLES --- */
-        #leaderboard-container {
-            margin-top: 20px;
-            width: 300px;
-            background-color: rgba(20, 20, 20, 0.9); 
-            border: 2px solid yellow;
-            padding: 15px; 
-            color: white;
-            text-align: left;
+        /* Animated Background Grid */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: 0;
         }
-        #leaderboard-container h3 {
-            margin: 0 0 10px 0; text-align: center; 
-            border-bottom: 1px solid red;
-            padding-bottom: 5px; font-size: 1.2rem; color: yellow;
+
+        @keyframes gridMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ffff;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 10s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Main Layout */
+        .main-wrapper {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            z-index: 10;
+        }
+
+        /* Game Area (Left/Center) */
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* Header */
+        .game-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .game-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            background: linear-gradient(135deg, #00ffff 0%, #ff00ff 50%, #00ffff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5));
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            letter-spacing: 0.5em;
+            color: #00ffff;
+            opacity: 0.8;
+            margin-top: 5px;
             text-transform: uppercase;
         }
-        #lb-list { list-style: none; padding: 0; margin: 0; font-size: 1rem; }
-        #lb-list li { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #444; }
-        #lb-list li span.lb-score { color: red; font-weight: bold; }
-        .loading-text { text-align: center; color: #888; font-size: 0.8rem; }
-        
-        #firebase-status { font-size: 0.8rem; margin-top: 5px; color: #555; }
 
-        .hidden { display: none !important; }
+        /* Canvas Container */
+        .canvas-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #gameCanvas {
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            box-shadow: 
+                0 0 50px rgba(0, 255, 255, 0.2),
+                inset 0 0 50px rgba(0, 255, 255, 0.05);
+            background: radial-gradient(ellipse at center, rgba(20, 20, 40, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%);
+            max-width: 100%;
+            max-height: 60vh;
+            display: block;
+            touch-action: none;
+        }
+
+        /* Touch Controls Overlay */
+        .touch-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .touch-controls.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .touch-zone {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .touch-zone-left {
+            border-right: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .touch-zone-right {
+            border-left: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .touch-zone:active {
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .touch-indicator {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: rgba(0, 255, 255, 0.5);
+            transition: all 0.2s;
+        }
+
+        .touch-zone:active .touch-indicator {
+            border-color: #00ffff;
+            color: #00ffff;
+            transform: scale(0.9);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Mobile Instructions */
+        .mobile-instructions {
+            display: none;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .desktop-instructions {
+                display: none;
+            }
+            .mobile-instructions {
+                display: block;
+            }
+        }
+
+        /* HUD - Inside Game Area */
+        #hud {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+            pointer-events: none;
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #hud.active {
+            opacity: 1;
+        }
+
+        .hud-item {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .hud-label {
+            font-size: 0.7rem;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hud-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Instructions */
+        .instructions {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        .key {
+            display: inline-block;
+            padding: 5px 15px;
+            margin: 0 5px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 5px;
+            color: #00ffff;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Sidebar (Right) - Leaderboard */
+        .sidebar {
+            width: 320px;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid rgba(0, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* UI Panels */
+        .panel {
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Name Entry - Centered Overlay */
+        #nameEntry {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            min-width: 400px;
+            z-index: 50;
+        }
+
+        .input-group {
+            margin: 30px 0;
+        }
+
+        #playerName {
+            width: 100%;
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            font-family: 'Rajdhani', sans-serif;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50px;
+            color: #fff;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+
+        #playerName:focus {
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        #playerName::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn {
+            padding: 15px 50px;
+            font-size: 1.1rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%);
+            border: none;
+            border-radius: 50px;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::before, .btn:active::before {
+            left: 100%;
+        }
+
+        .btn:hover, .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.4);
+        }
+
+        /* Leaderboard */
+        .leaderboard-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ff00ff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+        }
+
+        .leaderboard-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff00ff, transparent);
+        }
+
+        .score-list {
+            list-style: none;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .score-item:nth-child(1) { border-left-color: #ffd700; background: rgba(255, 215, 0, 0.1); }
+        .score-item:nth-child(2) { border-left-color: #c0c0c0; background: rgba(192, 192, 192, 0.1); }
+        .score-item:nth-child(3) { border-left-color: #cd7f32; background: rgba(205, 127, 50, 0.1); }
+
+        .score-rank {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            width: 30px;
+        }
+
+        .score-name {
+            flex: 1;
+            text-align: left;
+            margin-left: 15px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .score-value {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: #00ffff;
+        }
+
+        /* Game Over Screen */
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s;
+            z-index: 60;
+        }
+
+        #gameOver.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .game-over-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: #ff0066;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 0, 102, 0.5);
+        }
+
+        .final-score {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .final-score span {
+            color: #00ffff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            display: block;
+            margin-top: 10px;
+        }
+
+        /* Loading Animation */
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 255, 255, 0.1);
+            border-top-color: #00ffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-wrapper {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid rgba(0, 255, 255, 0.1);
+                padding: 20px;
+                display: none;
+            }
+            
+            #gameCanvas {
+                max-height: 50vh;
+                width: 100%;
+            }
+
+            .game-title {
+                font-size: 1.8rem;
+            }
+
+            #nameEntry {
+                min-width: 90%;
+                max-width: 400px;
+            }
+        }
+
+        /* Swipe Visual Feedback */
+        .swipe-feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: #00ffff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 60;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+        }
+
+        .swipe-feedback.show {
+            animation: swipeAnim 0.5s ease-out;
+        }
+
+        @keyframes swipeAnim {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
     </style>
 </head>
 <body>
+    <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div class="particles" id="particles"></div>
 
-    <div id="start-screen" class="screen">
-        <h1>WALL RUNNER</h1>
-        <p>Enter your name, Patriot:</p>
-        <input type="text" id="player-name-input" placeholder="Name" maxlength="10">
-        <button id="start-btn">START RUN</button>
+    <!-- Main Layout -->
+    <div class="main-wrapper">
+        <!-- Game Area -->
+        <div class="game-area">
+            <!-- Header -->
+            <div class="game-header">
+                <h1 class="game-title">NEON SPRINT</h1>
+                <div class="subtitle">Hyper-Casual Runner</div>
+            </div>
 
-        <div id="firebase-status">Initializing System...</div>
-        
-        <div id="leaderboard-container">
-            <h3>GLOBAL TOP 5</h3>
-            <ul id="lb-list">
-                <li class="loading-text">CONNECTING TO DATABASE...</li>
-            </ul>
-        </div>
-    </div>
+            <!-- HUD -->
+            <div id="hud">
+                <div class="hud-item">
+                    <div class="hud-label">Score</div>
+                    <div class="hud-value" id="scoreDisplay">0</div>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-label">Speed</div>
+                    <div class="hud-value" id="speedDisplay">1.0x</div>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-label">Best</div>
+                    <div class="hud-value" id="bestDisplay">0</div>
+                </div>
+            </div>
 
-    <div id="game-over-screen" class="screen hidden">
-        <h1 style="color: red;">CRASHED!</h1>
-        <p>Runner: <span id="final-name" style="color:yellow"></span></p>
-        <p>Distance: <span id="final-score" style="color:white">0</span> Feet</p>
-        <p>Max Speed Scale: <span id="final-scale" style="color:white">1.0</span></p>
-        <button id="restart-btn">TRY AGAIN</button>
-    </div>
+            <!-- Name Entry -->
+            <div id="nameEntry" class="panel">
+                <div style="margin-bottom: 20px; font-size: 1.1rem; color: rgba(255,255,255,0.8);">
+                    Enter your callsign, runner
+                </div>
+                <div class="input-group">
+                    <input type="text" id="playerName" placeholder="PLAYER_1" maxlength="15" autocomplete="off">
+                </div>
+                <button class="btn" onclick="startGame()">Initialize Run</button>
+                <div style="margin-top: 20px; font-size: 0.8rem; color: rgba(255,255,255,0.4);">
+                    <div class="loader" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 10px;"></div>
+                    Connecting to global servers...
+                </div>
+            </div>
 
-    <div id="pause-screen" class="screen hidden">
-        <h1>PAUSED</h1>
-        <button id="resume-btn">RESUME</button>
-    </div>
-
-    <div id="hud">
-        <div id="pause-btn">||</div>
-        <div id="score-board">
-            <div id="dist-display">0 FT</div>
-            <div id="speed-display" style="font-size: 0.8rem; color: #aaa;">SPD: 1.0</div>
-            <div id="high-score-display" style="font-size: 0.8rem; color: yellow; margin-top:5px;">BEST: 0</div>
-        </div>
-        <div id="speed-notif">SPEED UP!</div>
-    </div>
-
-    <script type="module">
-        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getDatabase, ref, set, get, child, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-
-        // --- FIREBASE CONFIGURATION ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyCiRUZZsaBiGKyYGlGc4coI14MG23bzT3g",
-            authDomain: "game-dd2e6.firebaseapp.com",
-            databaseURL: "https://game-dd2e6-default-rtdb.firebaseio.com",
-            projectId: "game-dd2e6",
-            storageBucket: "game-dd2e6.firebasestorage.app",
-            messagingSenderId: "989207031024",
-            appId: "1:989207031024:web:72e77a4cf766e564f66635"
-        };
-
-        // --- GAME STATE ---
-        let gameState = 'start'; 
-        let score = 0;
-        let personalBest = 0;
-        let playerName = "Player";
-        
-        let baseSpeed = 0.4;
-        let forwardSpeed = baseSpeed;
-        let speedScale = 1.0;
-        let maxScale = 100.0;
-        let nextSpeedThreshold = 150;
-        
-        const startScreen = document.getElementById('start-screen');
-        const gameOverScreen = document.getElementById('game-over-screen');
-        const pauseScreen = document.getElementById('pause-screen');
-        const hud = document.getElementById('hud');
-        const distDisplay = document.getElementById('dist-display');
-        const speedDisplay = document.getElementById('speed-display');
-        const highScoreDisplay = document.getElementById('high-score-display');
-        const speedNotif = document.getElementById('speed-notif');
-        const finalNameDisplay = document.getElementById('final-name');
-        const finalScoreDisplay = document.getElementById('final-score');
-        const finalScaleDisplay = document.getElementById('final-scale');
-        const nameInput = document.getElementById('player-name-input');
-        const lbList = document.getElementById('lb-list');
-        const firebaseStatus = document.getElementById('firebase-status');
-
-        // --- FIREBASE LOGIC ---
-        const FB = {
-            db: null,
-            ready: false,
-            init: function() {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    this.db = getDatabase(app);
-                    this.ready = true;
-                    firebaseStatus.innerHTML = '<span style="color:green">✓ ONLINE LINK ESTABLISHED</span>';
-                    this.listenLeaderboard();
-                } catch (e) {
-                    console.error(e);
-                    firebaseStatus.innerHTML = '<span style="color:red">✗ OFFLINE MODE</span>';
-                }
-            },
-            sanitize: (key) => key.replace(/[.#$[\]\/]/g, "").substring(0, 50),
-            submit: function(finalScore) {
-                if (!this.ready) return;
-                const safeName = playerName.trim() === "" ? "ANONYMOUS" : playerName;
-                const key = this.sanitize(safeName);
-                const userRef = ref(this.db, `scores/${key}`);
+            <!-- Canvas Container -->
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="gameCanvas" width="800" height="600" class="hidden"></canvas>
                 
-                get(userRef).then(snap => {
-                    if (!snap.exists() || finalScore > snap.val().score) {
-                        set(userRef, { name: safeName, score: finalScore, timestamp: Date.now() });
-                    }
-                });
-            },
-            fetchPersonalBest: function() {
-                if (!this.ready || !playerName) return;
-                const key = this.sanitize(playerName);
-                get(child(ref(this.db), `scores/${key}`)).then(snap => {
-                    if (snap.exists()) {
-                        personalBest = snap.val().score;
-                        highScoreDisplay.innerText = "BEST: " + personalBest;
-                    }
-                });
-            },
-            listenLeaderboard: function() {
-                if (!this.ready) return;
-                onValue(query(ref(this.db, 'scores'), orderByChild('score'), limitToLast(5)), (snap) => {
-                    const data = snap.val();
-                    if (!data) {
-                        lbList.innerHTML = "<li>No Data Found</li>";
-                        return;
-                    }
-                    const sorted = Object.values(data).sort((a, b) => b.score - a.score);
-                    lbList.innerHTML = sorted.map(e => 
-                        `<li>${e.name.substring(0,10)} <span class="lb-score">${e.score}</span></li>`
-                    ).join('');
-                });
-            }
-        };
+                <!-- Touch Controls Overlay -->
+                <div class="touch-controls" id="touchControls">
+                    <div class="touch-zone touch-zone-left" id="touchLeft">
+                        <div class="touch-indicator">←</div>
+                    </div>
+                    <div class="touch-zone touch-zone-right" id="touchRight">
+                        <div class="touch-indicator">→</div>
+                    </div>
+                </div>
 
-        // --- 1. SCENE SETUP ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000); 
-        scene.fog = new THREE.Fog(0x000000, 30, 90); 
+                <!-- Swipe Feedback -->
+                <div class="swipe-feedback" id="swipeFeedback">↔</div>
+            </div>
 
-        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const cameraOffset = new THREE.Vector3(0, 15, 12); 
+            <!-- Instructions -->
+            <div class="instructions desktop-instructions" id="instructions">
+                Use <span class="key">←</span> <span class="key">→</span> or <span class="key">A</span> <span class="key">D</span> to switch lanes
+            </div>
+            <div class="mobile-instructions">
+                Tap sides or swipe to move • Tap to start
+            </div>
+        </div>
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        document.body.appendChild(renderer.domElement);
-
-        // --- 2. LIGHTING ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(10, 30, 10);
-        dirLight.castShadow = true;
-        scene.add(dirLight);
-
-        // --- 3. OBJECTS ---
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(200, 200),
-            new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 })
-        );
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        scene.add(ground);
-
-        const lineGeo = new THREE.BoxGeometry(0.2, 0.1, 200);
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
-        const lines = [
-            new THREE.Mesh(lineGeo, lineMat), 
-            new THREE.Mesh(lineGeo, lineMat), 
-            new THREE.Mesh(lineGeo, lineMat), 
-            new THREE.Mesh(lineGeo, lineMat)  
-        ];
-        lines[0].position.set(-1.5, 0.05, 0);
-        lines[1].position.set(1.5, 0.05, 0);
-        lines[2].position.set(-4.5, 0.05, 0);
-        lines[3].position.set(4.5, 0.05, 0);
-        lines.forEach(l => scene.add(l));
-
-        // --- PLAYER (WHITE CUBE) ---
-        const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const playerMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff }); // Plain White
-        const player = new THREE.Mesh(playerGeometry, playerMaterial);
-        player.castShadow = true;
-        player.position.y = 0.5; // Sitting on ground (height/2)
-        scene.add(player);
-
-        const playerBox = new THREE.Box3();
-
-        // Obstacles
-        let obstacles = [];
-        const obstacleGeo = new THREE.BoxGeometry(1.5, 2, 1.5);
-        const obstacleMat = new THREE.MeshStandardMaterial({ color: 0xFF0000 });
-
-        // --- 4. LOGIC ---
-        let velocityY = 0;
-        const gravity = -0.025;
-        const jumpStrength = 0.6;
-        let isGrounded = true;
-        let currentLane = 0; 
-        const laneWidth = 3; 
-
-        function startGame() {
-            playerName = nameInput.value || "Anonymous";
-            FB.fetchPersonalBest();
-            resetGame();
-            gameState = 'playing';
-            startScreen.classList.add('hidden');
-            hud.style.display = 'block';
-        }
-
-        function resetGame() {
-            player.position.set(0, 0.5, 0); // Reset to center lane, on ground
-            currentLane = 0;
-            velocityY = 0;
-            isGrounded = true;
-            score = 0;
-            speedScale = 1.0;
-            nextSpeedThreshold = 150;
-            forwardSpeed = baseSpeed;
-            obstacles.forEach(obs => scene.remove(obs));
-            obstacles = [];
-            distDisplay.innerText = "0 FT";
-            speedDisplay.innerText = "SPD: 1.0";
-            gameOverScreen.classList.add('hidden');
-            pauseScreen.classList.add('hidden');
-        }
-
-        function togglePause() {
-            if (gameState === 'playing') {
-                gameState = 'paused';
-                pauseScreen.classList.remove('hidden');
-            } else if (gameState === 'paused') {
-                gameState = 'playing';
-                pauseScreen.classList.add('hidden');
-            }
-        }
-
-        function triggerGameOver() {
-            gameState = 'gameover';
-            hud.style.display = 'none';
-            gameOverScreen.classList.remove('hidden');
-            finalNameDisplay.innerText = playerName;
-            finalScoreDisplay.innerText = score;
-            finalScaleDisplay.innerText = speedScale.toFixed(1);
-            FB.submit(score);
-        }
-
-        function updateSpeed() {
-            if (score >= nextSpeedThreshold && speedScale < maxScale) {
-                speedScale += 0.5;
-                nextSpeedThreshold += 150;
-                forwardSpeed = baseSpeed + ((speedScale - 1) * 0.04); 
-                speedDisplay.innerText = "SPD: " + speedScale.toFixed(1);
-                speedNotif.style.opacity = 1;
-                setTimeout(() => { speedNotif.style.opacity = 0; }, 1000);
-            }
-        }
-
-        // --- 5. INPUT ---
-        document.getElementById('start-btn').addEventListener('click', startGame);
-        document.getElementById('restart-btn').addEventListener('click', () => {
-             gameOverScreen.classList.add('hidden');
-             startScreen.classList.remove('hidden');
-        });
-        document.getElementById('pause-btn').addEventListener('click', togglePause);
-        document.getElementById('resume-btn').addEventListener('click', togglePause);
-
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchStartTime = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            if(gameState !== 'playing') return;
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-            touchStartTime = new Date().getTime();
-        }, { passive: false });
-
-        document.addEventListener('touchend', (e) => {
-            if(gameState !== 'playing') return;
-            const deltaX = e.changedTouches[0].screenX - touchStartX;
-            const deltaY = e.changedTouches[0].screenY - touchStartY;
-            const time = new Date().getTime() - touchStartTime;
-
-            if (Math.abs(deltaX) < 30 && Math.abs(deltaY) < 30 && time < 300) doJump();
-            else if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                if (deltaX > 30) changeLane(1); 
-                else if (deltaX < -30) changeLane(-1); 
-            }
-        }, { passive: false });
-
-        document.addEventListener('keydown', (e) => {
-            if(gameState !== 'playing') return;
-            if(e.key === 'ArrowLeft' || e.key === 'a') changeLane(-1);
-            if(e.key === 'ArrowRight' || e.key === 'd') changeLane(1);
-            if(e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') doJump();
-            if(e.key === 'p' || e.key === 'Escape') togglePause();
-        });
-
-        function doJump() { if (isGrounded) { velocityY = jumpStrength; isGrounded = false; } }
-        function changeLane(dir) { 
-            currentLane += dir; 
-            if (currentLane < -1) currentLane = -1; 
-            if (currentLane > 1) currentLane = 1; 
-        }
-
-        // --- 6. ANIMATION LOOP ---
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (gameState !== 'playing') return;
-
-            // Movement
-            player.position.z -= forwardSpeed;
-            score = Math.floor(Math.abs(player.position.z));
-            distDisplay.innerText = score + " FT";
-            updateSpeed();
-
-            // Camera
-            camera.position.z = player.position.z + cameraOffset.z;
-            camera.position.y = cameraOffset.y; 
-            camera.position.x += (player.position.x - camera.position.x) * 0.1;
-            camera.lookAt(player.position.x, player.position.y, player.position.z - 10);
-            
-            ground.position.z = player.position.z;
-            lines.forEach(l => l.position.z = player.position.z);
-
-            // Lane Physics
-            const targetX = currentLane * laneWidth;
-            player.position.x += (targetX - player.position.x) * 0.2;
-
-            player.position.y += velocityY;
-            if (player.position.y > 0.5) {
-                velocityY += gravity;
-                isGrounded = false;
-            } else {
-                player.position.y = 0.5;
-                velocityY = 0;
-                isGrounded = true;
-            }
-
-            // Collisions
-            playerBox.setFromObject(player); 
-            playerBox.expandByScalar(-0.2); // Tighter hit box for cube
-
-            // Obstacle Spawning
-            const spawnChance = 0.03 + (speedScale * 0.002);
-            if (Math.random() < spawnChance) { 
-                const obs = new THREE.Mesh(obstacleGeo, obstacleMat);
-                const lane = Math.floor(Math.random() * 3) - 1; 
-                const spawnDist = 80 + (speedScale * 2);
-                obs.position.set(lane * laneWidth, 1, player.position.z - spawnDist); 
-                obs.castShadow = true;
-                scene.add(obs);
-                obstacles.push(obs);
-            }
-
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                const obs = obstacles[i];
-                if (obs.position.z > player.position.z + 10) {
-                    scene.remove(obs);
-                    obstacles.splice(i, 1);
-                    continue;
-                }
-                const obsBox = new THREE.Box3().setFromObject(obs);
-                if (playerBox.intersectsBox(obsBox)) {
-                    triggerGameOver();
-                }
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        FB.init();
-        animate();
-    </script>
-</body>
-</html>
+        <!-- Sidebar - Leaderboard -->
+        <div class="sidebar">
+            <div class="panel">
+                <div class="leaderboard-title">Global Elite</div>
+                <ul class="score-list" id="scoreList">
+                    <li class="score-item">
+                        <span class="score-rank">01</span>
+                        <span class="score-name">NEON_KING</span>
+                        <span class="score-value">15,420</span>
+                    </li>
+                    <li class="score-item">
+                        <span class="score-rank">02</span>
+                        <span class="score-name">CYBER_WOLF</span>
+                        <span class="score-value">12,890</span>
+                    </l
