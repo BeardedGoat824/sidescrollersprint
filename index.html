@@ -375,6 +375,11 @@
             position: relative;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        input, button {
+            touch-action: manipulation;
         }
 
         .btn::before {
@@ -699,11 +704,8 @@
         </div>
     </div>
 
-    <script type="module">
-        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getDatabase, ref, set, get, child, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script>
         // --- Spawn floating background particles ---
         const particlesEl = document.getElementById('particles');
         for (let i = 0; i < 30; i++) {
@@ -715,62 +717,11 @@
             particlesEl.appendChild(p);
         }
 
-        // --- Firebase ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyCiRUZZsaBiGKyYGlGc4coI14MG23bzT3g",
-            authDomain: "game-dd2e6.firebaseapp.com",
-            databaseURL: "https://game-dd2e6-default-rtdb.firebaseio.com",
-            projectId: "game-dd2e6",
-            storageBucket: "game-dd2e6.firebasestorage.app",
-            messagingSenderId: "989207031024",
-            appId: "1:989207031024:web:72e77a4cf766e564f66635"
-        };
-
+        // --- Scores (localStorage only) ---
         const FB = {
-            db: null, ready: false,
-            init() {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    this.db = getDatabase(app);
-                    this.ready = true;
-                    this.listenLeaderboard();
-                } catch(e) { console.error('Firebase init failed', e); }
-            },
-            sanitize: k => k.replace(/[.#$[\]/]/g, '').substring(0, 50) || 'ANON',
-            submit(score) {
-                if (!this.ready) return;
-                const key = this.sanitize(playerName);
-                get(ref(this.db, `scores/${key}`)).then(snap => {
-                    if (!snap.exists() || score > snap.val().score)
-                        set(ref(this.db, `scores/${key}`), { name: playerName, score, timestamp: Date.now() });
-                });
-            },
-            fetchPersonalBest() {
-                if (!this.ready) return;
-                get(child(ref(this.db), `scores/${this.sanitize(playerName)}`)).then(snap => {
-                    if (snap.exists()) {
-                        const fb = snap.val().score;
-                        const ls = parseInt(localStorage.getItem('neonSprintBest') || '0');
-                        personalBest = Math.max(fb, ls, personalBest);
-                        bestDisplay.textContent = personalBest;
-                    }
-                });
-            },
-            listenLeaderboard() {
-                if (!this.ready) return;
-                onValue(query(ref(this.db, 'scores'), orderByChild('score'), limitToLast(5)), snap => {
-                    const data = snap.val();
-                    const list = document.getElementById('scoreList');
-                    if (!data) return;
-                    const sorted = Object.values(data).sort((a, b) => b.score - a.score);
-                    list.innerHTML = sorted.map((e, i) => `
-                        <li class="score-item">
-                            <span class="score-rank">${String(i + 1).padStart(2, '0')}</span>
-                            <span class="score-name">${e.name.substring(0, 12)}</span>
-                            <span class="score-value">${e.score.toLocaleString()}</span>
-                        </li>`).join('');
-                });
-            }
+            init() {},
+            submit(score) {},
+            fetchPersonalBest() {}
         };
 
         // --- DOM refs ---
@@ -1068,7 +1019,6 @@
             renderer.render(scene, camera);
         }
 
-        FB.init();
         animate();
     </script>
 </body>
