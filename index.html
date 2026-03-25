@@ -662,4 +662,414 @@
                         <span class="score-rank">02</span>
                         <span class="score-name">CYBER_WOLF</span>
                         <span class="score-value">12,890</span>
-                    </l
+                    </li>
+                    <li class="score-item">
+                        <span class="score-rank">03</span>
+                        <span class="score-name">GRID_GHOST</span>
+                        <span class="score-value">10,250</span>
+                    </li>
+                    <li class="score-item">
+                        <span class="score-rank">04</span>
+                        <span class="score-name">VOLT_RIDER</span>
+                        <span class="score-value">8,770</span>
+                    </li>
+                    <li class="score-item">
+                        <span class="score-rank">05</span>
+                        <span class="score-name">NEON_WRAITH</span>
+                        <span class="score-value">7,140</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div><!-- /.main-wrapper -->
+
+    <!-- Game Over Overlay -->
+    <div id="gameOver" class="panel" style="position:fixed;min-width:340px;max-width:90vw;">
+        <div class="game-over-title">FLATLINED</div>
+        <div style="margin-bottom:8px;font-size:1.1rem;color:rgba(255,255,255,0.7);">Runner: <strong id="goRunner" style="color:#00ffff;"></strong></div>
+        <div class="final-score">
+            Distance
+            <span id="goScore">0</span>
+        </div>
+        <div style="margin-bottom:25px;font-size:0.9rem;color:rgba(255,255,255,0.5);">Max Speed: <span id="goSpeed" style="color:#ff00ff;">1.0</span>x</div>
+        <div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn" onclick="restartGame()" style="padding:12px 30px;">Run Again</button>
+            <button class="btn" onclick="goToMenu()" style="padding:12px 30px;background:linear-gradient(135deg,#ff00ff,#8800ff);color:#fff;">Menu</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getDatabase, ref, set, get, child, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+        // --- Spawn floating background particles ---
+        const particlesEl = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = (Math.random() * 100) + '%';
+            p.style.animationDelay = (Math.random() * 10) + 's';
+            p.style.animationDuration = (8 + Math.random() * 8) + 's';
+            particlesEl.appendChild(p);
+        }
+
+        // --- Firebase ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCiRUZZsaBiGKyYGlGc4coI14MG23bzT3g",
+            authDomain: "game-dd2e6.firebaseapp.com",
+            databaseURL: "https://game-dd2e6-default-rtdb.firebaseio.com",
+            projectId: "game-dd2e6",
+            storageBucket: "game-dd2e6.firebasestorage.app",
+            messagingSenderId: "989207031024",
+            appId: "1:989207031024:web:72e77a4cf766e564f66635"
+        };
+
+        const FB = {
+            db: null, ready: false,
+            init() {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    this.db = getDatabase(app);
+                    this.ready = true;
+                    this.listenLeaderboard();
+                } catch(e) { console.error('Firebase init failed', e); }
+            },
+            sanitize: k => k.replace(/[.#$[\]/]/g, '').substring(0, 50) || 'ANON',
+            submit(score) {
+                if (!this.ready) return;
+                const key = this.sanitize(playerName);
+                get(ref(this.db, `scores/${key}`)).then(snap => {
+                    if (!snap.exists() || score > snap.val().score)
+                        set(ref(this.db, `scores/${key}`), { name: playerName, score, timestamp: Date.now() });
+                });
+            },
+            fetchPersonalBest() {
+                if (!this.ready) return;
+                get(child(ref(this.db), `scores/${this.sanitize(playerName)}`)).then(snap => {
+                    if (snap.exists()) {
+                        const fb = snap.val().score;
+                        const ls = parseInt(localStorage.getItem('neonSprintBest') || '0');
+                        personalBest = Math.max(fb, ls, personalBest);
+                        bestDisplay.textContent = personalBest;
+                    }
+                });
+            },
+            listenLeaderboard() {
+                if (!this.ready) return;
+                onValue(query(ref(this.db, 'scores'), orderByChild('score'), limitToLast(5)), snap => {
+                    const data = snap.val();
+                    const list = document.getElementById('scoreList');
+                    if (!data) return;
+                    const sorted = Object.values(data).sort((a, b) => b.score - a.score);
+                    list.innerHTML = sorted.map((e, i) => `
+                        <li class="score-item">
+                            <span class="score-rank">${String(i + 1).padStart(2, '0')}</span>
+                            <span class="score-name">${e.name.substring(0, 12)}</span>
+                            <span class="score-value">${e.score.toLocaleString()}</span>
+                        </li>`).join('');
+                });
+            }
+        };
+
+        // --- DOM refs ---
+        const nameEntryPanel = document.getElementById('nameEntry');
+        const nameInput      = document.getElementById('playerName');
+        const canvas         = document.getElementById('gameCanvas');
+        const hud            = document.getElementById('hud');
+        const scoreDisplay   = document.getElementById('scoreDisplay');
+        const speedDisplay   = document.getElementById('speedDisplay');
+        const bestDisplay    = document.getElementById('bestDisplay');
+        const touchControls  = document.getElementById('touchControls');
+        const gameOverPanel  = document.getElementById('gameOver');
+        const swipeFeedback  = document.getElementById('swipeFeedback');
+
+        // --- Game state ---
+        let gameState = 'start';
+        let score = 0;
+        let personalBest = parseInt(localStorage.getItem('neonSprintBest') || '0');
+        let playerName = 'RUNNER';
+        bestDisplay.textContent = personalBest;
+
+        let baseSpeed = 0.4, forwardSpeed = 0.4;
+        let speedScale = 1.0, nextSpeedThreshold = 150;
+        const maxScale = 100.0;
+
+        let velocityY = 0, isGrounded = true, jumpCount = 0;
+        const gravity = -0.025, jumpStrength = 0.6, maxJumps = 2;
+        let currentLane = 0;
+        const laneWidth = 3;
+
+        // --- Three.js ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000510);
+        scene.fog = new THREE.Fog(0x000510, 30, 100);
+
+        const CANVAS_W = 800, CANVAS_H = 600;
+        const camera = new THREE.PerspectiveCamera(70, CANVAS_W / CANVAS_H, 0.1, 1000);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(CANVAS_W, CANVAS_H);
+        renderer.shadowMap.enabled = true;
+
+        // Lights
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 30, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // Ground
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(30, 1000),
+            new THREE.MeshStandardMaterial({ color: 0x080818, roughness: 0.9 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Lane lines
+        const lineMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.35 });
+        [-4.5, -1.5, 1.5, 4.5].forEach(x => {
+            const l = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 500), lineMat);
+            l.position.set(x, 0.03, 0);
+            scene.add(l);
+        });
+
+        // Player — neon cyan cube
+        const playerMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x003333 })
+        );
+        playerMesh.castShadow = true;
+        playerMesh.position.y = 0.5;
+        scene.add(playerMesh);
+        const playerBox = new THREE.Box3();
+
+        // Obstacles — magenta boxes
+        const obstacles = [];
+        const obstacleGeo = new THREE.BoxGeometry(1.5, 2, 1.5);
+        const obstacleMat = new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0x330033 });
+
+        // Coins — spinning yellow tori
+        const coins = [];
+        const coinGeo = new THREE.TorusGeometry(0.4, 0.12, 8, 20);
+        const coinMat = new THREE.MeshStandardMaterial({ color: 0xffdd00, emissive: 0x332200 });
+
+        // --- Exposed functions for onclick attributes ---
+        window.startGame = function() {
+            playerName = (nameInput.value.trim() || 'RUNNER').toUpperCase();
+            FB.fetchPersonalBest();
+            resetGame();
+            nameEntryPanel.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            hud.classList.add('active');
+            touchControls.classList.add('active');
+            gameState = 'playing';
+        };
+
+        window.restartGame = function() {
+            resetGame();
+            canvas.classList.remove('hidden');
+            hud.classList.add('active');
+            touchControls.classList.add('active');
+            gameState = 'playing';
+        };
+
+        window.goToMenu = function() {
+            resetGame();
+            gameOverPanel.classList.remove('active');
+            canvas.classList.add('hidden');
+            hud.classList.remove('active');
+            touchControls.classList.remove('active');
+            nameEntryPanel.classList.remove('hidden');
+            gameState = 'start';
+        };
+
+        // Also allow pressing Enter in name field to start
+        nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') window.startGame(); });
+
+        function resetGame() {
+            playerMesh.position.set(0, 0.5, 0);
+            currentLane = 0; velocityY = 0; isGrounded = true; jumpCount = 0;
+            score = 0; speedScale = 1.0; nextSpeedThreshold = 150; forwardSpeed = baseSpeed;
+            obstacles.forEach(o => scene.remove(o)); obstacles.length = 0;
+            coins.forEach(c => scene.remove(c)); coins.length = 0;
+            scoreDisplay.textContent = '0';
+            speedDisplay.textContent = '1.0x';
+            gameOverPanel.classList.remove('active');
+        }
+
+        function triggerGameOver() {
+            gameState = 'gameover';
+            hud.classList.remove('active');
+            touchControls.classList.remove('active');
+            document.getElementById('goRunner').textContent = playerName;
+            document.getElementById('goScore').textContent = score.toLocaleString();
+            document.getElementById('goSpeed').textContent = speedScale.toFixed(1);
+            if (score > personalBest) {
+                personalBest = score;
+                localStorage.setItem('neonSprintBest', personalBest);
+                bestDisplay.textContent = personalBest;
+            }
+            FB.submit(score);
+            gameOverPanel.classList.add('active');
+        }
+
+        function doJump() {
+            if (jumpCount < maxJumps) {
+                velocityY = jumpStrength;
+                isGrounded = false;
+                jumpCount++;
+            }
+        }
+
+        function changeLane(dir) {
+            currentLane = Math.max(-1, Math.min(1, currentLane + dir));
+        }
+
+        function updateSpeed() {
+            if (score >= nextSpeedThreshold && speedScale < maxScale) {
+                speedScale += 0.5;
+                nextSpeedThreshold += 150;
+                forwardSpeed = baseSpeed + (speedScale - 1) * 0.04;
+                speedDisplay.textContent = speedScale.toFixed(1) + 'x';
+            }
+        }
+
+        // --- Keyboard input ---
+        document.addEventListener('keydown', e => {
+            if (gameState !== 'playing') return;
+            if (e.key === 'ArrowLeft'  || e.key === 'a') changeLane(-1);
+            if (e.key === 'ArrowRight' || e.key === 'd') changeLane(1);
+            if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') { e.preventDefault(); doJump(); }
+            if (e.key === 'p' || e.key === 'Escape') {
+                gameState = gameState === 'playing' ? 'paused' : 'playing';
+            }
+        });
+
+        // --- Touch input ---
+        let tx = 0, ty = 0, tt = 0;
+
+        document.getElementById('touchLeft').addEventListener('touchstart', e => {
+            e.preventDefault(); e.stopPropagation();
+            if (gameState === 'playing') changeLane(-1);
+        }, { passive: false });
+
+        document.getElementById('touchRight').addEventListener('touchstart', e => {
+            e.preventDefault(); e.stopPropagation();
+            if (gameState === 'playing') changeLane(1);
+        }, { passive: false });
+
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            tx = e.touches[0].clientX; ty = e.touches[0].clientY; tt = Date.now();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', e => {
+            e.preventDefault();
+            if (gameState !== 'playing') return;
+            const dx = e.changedTouches[0].clientX - tx;
+            const dy = e.changedTouches[0].clientY - ty;
+            const dt = Date.now() - tt;
+            if (Math.abs(dx) < 40 && Math.abs(dy) < 40 && dt < 300) doJump();
+            else if (dy < -40) doJump();
+        }, { passive: false });
+
+        // Prevent page scroll while playing
+        document.addEventListener('touchmove', e => { if (gameState === 'playing') e.preventDefault(); }, { passive: false });
+
+        // --- Animation loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameState !== 'playing') {
+                renderer.render(scene, camera);
+                return;
+            }
+
+            // Forward movement & score
+            playerMesh.position.z -= forwardSpeed;
+            score = Math.floor(Math.abs(playerMesh.position.z));
+            scoreDisplay.textContent = score;
+            updateSpeed();
+
+            // Camera follow
+            camera.position.z = playerMesh.position.z + 12;
+            camera.position.y = 15;
+            camera.position.x += (playerMesh.position.x - camera.position.x) * 0.1;
+            camera.lookAt(playerMesh.position.x, playerMesh.position.y, playerMesh.position.z - 10);
+
+            // Ground scrolls with player
+            ground.position.z = playerMesh.position.z;
+
+            // Lane glide
+            playerMesh.position.x += (currentLane * laneWidth - playerMesh.position.x) * 0.2;
+
+            // Vertical physics
+            playerMesh.position.y += velocityY;
+            if (playerMesh.position.y <= 0.5) {
+                playerMesh.position.y = 0.5;
+                velocityY = 0;
+                isGrounded = true;
+                jumpCount = 0;
+            } else {
+                velocityY += gravity;
+            }
+
+            playerBox.setFromObject(playerMesh).expandByScalar(-0.2);
+
+            // Spawn obstacles
+            const spawnChance = 0.03 + speedScale * 0.002;
+            if (Math.random() < spawnChance) {
+                const obs = new THREE.Mesh(obstacleGeo, obstacleMat);
+                obs.position.set(
+                    (Math.floor(Math.random() * 3) - 1) * laneWidth,
+                    1,
+                    playerMesh.position.z - 80 - speedScale * 2
+                );
+                obs.castShadow = true;
+                scene.add(obs);
+                obstacles.push(obs);
+            }
+
+            // Spawn coins (~1/3 the rate of obstacles)
+            if (Math.random() < 0.012) {
+                const coin = new THREE.Mesh(coinGeo, coinMat);
+                coin.position.set(
+                    (Math.floor(Math.random() * 3) - 1) * laneWidth,
+                    1.5,
+                    playerMesh.position.z - 70
+                );
+                scene.add(coin);
+                coins.push(coin);
+            }
+
+            // Check obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                if (obs.position.z > playerMesh.position.z + 10) { scene.remove(obs); obstacles.splice(i, 1); continue; }
+                if (playerBox.intersectsBox(new THREE.Box3().setFromObject(obs))) { triggerGameOver(); return; }
+            }
+
+            // Check / animate coins
+            for (let i = coins.length - 1; i >= 0; i--) {
+                const coin = coins[i];
+                coin.rotation.y += 0.06;
+                if (coin.position.z > playerMesh.position.z + 10) { scene.remove(coin); coins.splice(i, 1); continue; }
+                if (playerBox.intersectsBox(new THREE.Box3().setFromObject(coin))) {
+                    scene.remove(coin); coins.splice(i, 1);
+                    score += 50;
+                    scoreDisplay.textContent = score;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        FB.init();
+        animate();
+    </script>
+</body>
+</html>
